@@ -7,7 +7,7 @@ setup(name="neubot_http",
       author="Simone Basso",
       author_email="bassosimone@gmail.com",
       description="Neubot's HTTP library",
-      license="GNU GPL v2",
+      license="GNU GPL v3",
       url="http://www.neubot.org/",
       packages=["neubot_http"],
 )
