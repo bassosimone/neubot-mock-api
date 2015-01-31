@@ -24,6 +24,12 @@
              logging.debug("header: %s => %s", key, message["headers"][key])
          for chunk in message["body"]:
              logging.debug("chunk: %s", chunk)
+
+         # Python 3
+         #yield from neubot_http.serializer.compose_response("200", "Ok", {
+         #    "Content-Type": "application/json",
+         #}, "{}")
+
          subgen = neubot_http.serializer.compose_response("200", "Ok", {
              "Content-Type": "application/json",
          }, "{}")

@@ -20,7 +20,7 @@ class HTTPRouter(object):
 
     def add_route(self, url, generator):
         """ Add a route to the router """
-        self.routes[url] = generator
+        self.routes[url.encode("utf-8")] = generator
 
     def add_default_route(self, generator):
         """ Add the default route """
@@ -31,7 +31,7 @@ class HTTPRouter(object):
 
         url = request["url"]
         logging.debug("http: router received url: %s", url)
-        index = url.find("?")
+        index = url.find(b"?")
         if index >= 0:
             url = url[:index]
             logging.debug("http: router url without query: %s", url)
