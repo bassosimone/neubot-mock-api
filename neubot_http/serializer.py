@@ -14,7 +14,7 @@ def compose(first_line, headers, before, filep, after):
     """ Compose a generic HTTP message """
 
     logging.debug("> %s", first_line)
-    yield first_line.encode("utf-8") + b"\r\n"
+    yield first_line + "\r\n"
 
     tot = 0
     if before:
@@ -31,8 +31,8 @@ def compose(first_line, headers, before, filep, after):
         if value is not None:
             logging.debug("> %s: %s", name, value)
             header = "%s: %s\r\n" % (name, value)
-            yield header.encode("utf-8")
-    yield b"\r\n"
+            yield header
+    yield "\r\n"
 
     if before:
         yield before
@@ -46,8 +46,6 @@ def compose(first_line, headers, before, filep, after):
 
 def compose_response(code, reason, headers, body):
     """ Compose a generic HTTP message """
-    if body is not None and not isinstance(body, bytes):
-        body = body.encode("utf-8")
     return compose("HTTP/1.1 %s %s" % (code, reason),
                    headers, body, None, None)
 
@@ -69,7 +67,7 @@ def compose_error(code, reason):
         </HTML>
         """ % locals()
     return compose_response(code, reason, {
-        "Content-Type": "text/html; charset=utf-8",
+        "Content-Type": "text/html",
     }, body)
 
 def compose_headers(code, reason, headers):
@@ -100,4 +98,4 @@ def compose_chunk(chunk):
     logging.debug("> {%d bytes}", len(chunk))
     yield chunk
     logging.debug(">")
-    yield b"\r\n"
+    yield "\r\n"
