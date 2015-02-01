@@ -34,7 +34,7 @@ class WWWHandler(object):
             os.path.realpath(os.path.abspath(rootdir)))
         logging.debug("www: real rootdir is: %s", self.rootdir)
 
-    def resolve_path(self, path):
+    def _resolve_path(self, path):
         """ Safely maps HTTP path to filesystem path """
 
         logging.debug("www: rootdir %s", self.rootdir)
@@ -102,7 +102,7 @@ class WWWHandler(object):
 
         logging.debug("www: requested to serve: %s", request.url)
 
-        path = self.resolve_path(request.url)
+        path = self._resolve_path(request.url)
         if not path:
             return serializer.compose_error(403, "Forbidden")
 
