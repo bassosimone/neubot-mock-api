@@ -60,8 +60,8 @@ class WWWHandler(object):
             mimetype = "text/plain"
         return mimetype, encoding
 
-    def serve_file(self, path):
-        """ Serve the file at path  """
+    def _serve_file(self, path):
+        """ Serve the file at path """
 
         if not os.path.isfile(path):
             return serializer.compose_error(404, "Not Found")
@@ -72,6 +72,11 @@ class WWWHandler(object):
             filep = open(path, "rb")
         except (OSError, IOError):
             return serializer.compose_error(404, "Not Found")
+
+        return self.serve_filep(self, filep)
+
+    def serve_filep(self, filep):
+        """ Serve the content of a file """
 
         mimetype, encoding = self.guess_mimetype(path)
 
@@ -86,7 +91,7 @@ class WWWHandler(object):
         """ Serve the directory at path """
         path = os.sep.join([path, self.default_file])
         logging.debug("www: url isdir; trying with: %s", path)
-        return self.serve_file(path)
+        return self._serve_file(path)
 
     def __call__(self, request):
         """ Process HTTP request for WWW resource """
@@ -106,4 +111,4 @@ class WWWHandler(object):
         if os.path.isdir(path):
             return self.serve_directory(path)
         else:
-            return self.serve_file(path)
+            return self._serve_file(path)
