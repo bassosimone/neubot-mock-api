@@ -54,9 +54,11 @@ class HTTPOutputQueue(object):
             except TypeError:
                 elem = self.queue.popleft()
                 if elem:
-                    if isinstance(elem, str):
+                    try:
+                        elem = memoryview(elem)
+                    except TypeError:  # Deal with strings
                         elem = elem.encode(self.default_encoding)
-                    elem = memoryview(elem)
+                        elem = memoryview(elem)
                     return elem
             else:
                 self.queue.appendleft(elem)
