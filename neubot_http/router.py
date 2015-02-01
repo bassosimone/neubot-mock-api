@@ -29,7 +29,7 @@ class HTTPRouter(object):
     def route(self, request):
         """ Route request """
 
-        url = request["url"]
+        url = request.url
         logging.debug("http: router received url: %s", url)
         index = url.find("?")
         if index >= 0:

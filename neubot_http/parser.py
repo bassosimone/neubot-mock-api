@@ -9,6 +9,8 @@
 
 import logging
 
+from .messages import HTTPMessage
+
 class HTTPError(RuntimeError):
     """ Indicates a protocol error """
 
@@ -126,21 +128,11 @@ class HTTPParser(object):
                 headers[last_hdr] = value
 
             if isresponse:
-                message = {
-                    "type": "response",
-                    "protocol": first_line[0],
-                    "code": first_line[1],
-                    "reason": first_line[2],
-                    "headers": headers,
-                }
+                message = HTTPMessage.response(first_line[0], first_line[1],
+                                               first_line[2], headers)
             else:
-                message = {
-                    "type": "request",
-                    "method": first_line[0],
-                    "url": first_line[1],
-                    "protocol": first_line[2],
-                    "headers": headers,
-                }
+                message = HTTPMessage.request(first_line[0], first_line[1],
+                                              first_line[2], headers)
 
             yield (message["type"], message)
 
