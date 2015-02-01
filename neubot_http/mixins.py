@@ -21,6 +21,7 @@ class HTTPServerMixin(object):
     def override_www_handler(self, www_handler):
         """ Override the WWW handler """
         self.www_handler = www_handler
+        self.router.add_default_route(self.www_handler)
 
     def add_route(self, url, generator):
         """ Add route """
