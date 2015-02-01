@@ -5,7 +5,7 @@
 # information on the copying conditions.
 #
 
-""" HTTP main """
+""" Implements serve() function """
 
 import asyncore
 import logging
