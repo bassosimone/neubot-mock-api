@@ -116,3 +116,7 @@ def compose_chunk(chunk):
     yield chunk
     logging.debug(">")
     yield "\r\n"
+
+def compose_last_chunk():
+    """ Compose last chunk """
+    yield "0\r\n\r\n"

@@ -42,7 +42,7 @@ class PrettyWWWHandler(neubot_http.WWWHandler):
             chunk = "  <DIV><A HREF='%(name)s'>%(name)s</A></DIV>\n" % locals()
             yield neubot_http.serializer.compose_chunk(chunk)
         yield neubot_http.serializer.compose_chunk("</BODY></HTML>\n")
-        yield "0\r\n\r\n"
+        yield neubot_http.serializer.compose_last_chunk()
 
     def serve_filep(self, request, path, filep):
         yield neubot_http.serializer.compose_headers("200", "Ok", {
@@ -54,7 +54,7 @@ class PrettyWWWHandler(neubot_http.WWWHandler):
         yield neubot_http.serializer.compose_chunk(cgi.escape(filep.read()))
         yield neubot_http.serializer.compose_chunk("</PRE><HR>")
         yield neubot_http.serializer.compose_chunk("</BODY></HTML>\n")
-        yield "0\r\n\r\n"
+        yield neubot_http.serializer.compose_last_chunk()
 
 def main():
     """ Main function """
