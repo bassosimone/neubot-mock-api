@@ -16,16 +16,24 @@ def compose(first_line, headers, before, filep, after):
     logging.debug("> %s", first_line)
     yield first_line + "\r\n"
 
-    tot = 0
-    if before:
-        tot += len(before)
-    if filep:
-        filep.seek(0, os.SEEK_END)
-        tot += filep.tell()
-        filep.seek(0, os.SEEK_SET)
-    if after:
-        tot += len(after)
-    headers["Content-Length"] = tot
+    ischunked = False
+    for name in headers:
+        ischunked = (name.lower() == "transfer-encoding" and
+            headers[name].lower() == "chunked")
+        if ischunked:
+            break
+
+    if not ischunked:
+        tot = 0
+        if before:
+            tot += len(before)
+        if filep:
+            filep.seek(0, os.SEEK_END)
+            tot += filep.tell()
+            filep.seek(0, os.SEEK_SET)
+        if after:
+            tot += len(after)
+        headers["Content-Length"] = tot
 
     for name, value in headers.items():
         if value is not None:
@@ -35,14 +43,23 @@ def compose(first_line, headers, before, filep, after):
     yield "\r\n"
 
     if before:
-        yield before
+        if ischunked:
+            yield compose_chunk(before)
+        else:
+            yield before
     while filep:
         data = filep.read(65536)
         if not data:
             break
-        yield data
+        if ischunked:
+            yield compose_chunk(data)
+        else:
+            yield data
     if after:
-        yield after
+        if ischunked:
+            yield compose_chunk(after)
+        else:
+            yield after
 
 def compose_response(code, reason, headers, body):
     """ Compose a generic HTTP message """
