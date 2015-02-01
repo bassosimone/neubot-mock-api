@@ -73,7 +73,7 @@ class WWWHandler(object):
         except (OSError, IOError):
             return serializer.compose_error(404, "Not Found")
 
-        return self.serve_filep(self, filep)
+        return self.serve_filep(filep)
 
     def serve_filep(self, filep):
         """ Serve the content of a file """
