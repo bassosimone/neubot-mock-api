@@ -39,7 +39,8 @@ class PrettyWWWHandler(neubot_http.WWWHandler):
                 name += "/"
             elif not os.path.isfile(fullpath):
                 continue
-            chunk = "  <DIV><A HREF='%(name)s'>%(name)s</A></DIV>\n" % locals()
+            quot = cgi.escape(name)
+            chunk = "  <DIV><A HREF='%(name)s'>%(quot)s</A></DIV>\n" % locals()
             yield neubot_http.serializer.compose_chunk(chunk)
         yield neubot_http.serializer.compose_chunk("</BODY></HTML>\n")
         yield neubot_http.serializer.compose_last_chunk()
