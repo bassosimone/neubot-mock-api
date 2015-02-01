@@ -36,4 +36,5 @@
 """
 
 from .serve import serve
+from .www_handler import WWWHandler
 from . import serializer
