@@ -40,7 +40,10 @@ class HTTPMessage(object):
         return message
 
     def __getitem__(self, key):
-        return self.headers[key.lower()]
+        key = key.lower()
+        if key not in self.headers:
+            return ""
+        return self.headers[key]
 
     def add_body_chunk(self, chunk):
         """ Add chunk to body """
