@@ -9,6 +9,8 @@
 
 import logging
 
+from .messages import HTTPMessage
+
 class HTTPError(RuntimeError):
     """ Indicates a protocol error """
 
@@ -46,13 +48,18 @@ class HTTPParser(object):
             pos = data.find(b"\n")
             if pos == -1:
                 if len(data) > maxline:
-                    return -1, b""
-                return 0, b""
+                    return -1, ""
+                return 0, ""
             else:
                 pos += 1
         else:
             pos += 2
         line = data[:pos]
+        #
+        # If I understand RFC2616 Sect. 2.2 correctly, <TEXT> must
+        # be ISO-8859-1, otherwise it must be MIME encoded.
+        #
+        line = line.decode("iso-8859-1")
         self.incoming = [data[pos:]]
         return len(line), line
 
@@ -62,7 +69,7 @@ class HTTPParser(object):
         if length < 0:
             raise HTTPError
         if length == 0:
-            return b""
+            return ""
         logging.debug("< %s", line.strip())
         return line
 
@@ -89,15 +96,15 @@ class HTTPParser(object):
             if len(first_line) != 3:
                 raise HTTPError
 
-            if first_line[0].startswith(b"HTTP/"):
+            if first_line[0].startswith("HTTP/"):
                 isresponse = True
-            elif first_line[2].startswith(b"HTTP/"):
+            elif first_line[2].startswith("HTTP/"):
                 isresponse = False
             else:
                 raise HTTPError
 
             logging.debug("* HEADERS")
-            last_hdr = b""
+            last_hdr = ""
             headers = {}
             while True:
                 if len(headers) > self.maxheaders:
@@ -109,37 +116,27 @@ class HTTPParser(object):
                 line = line.strip()
                 if not line:
                     break
-                if last_hdr and line[0:1] in (b" ", b"\t"):
+                if last_hdr and line[0:1] in (" ", "\t"):
                     # Must be first branch so ":" can appear in folded lines
-                    value = headers[last_hdr] + b" " + line
+                    value = headers[last_hdr] + " " + line
                 else:
-                    pos = line.find(b":")
+                    pos = line.find(":")
                     if pos < 0:
                         raise HTTPError
-                    last_hdr, value = line.split(b":", 1)
+                    last_hdr, value = line.split(":", 1)
                     last_hdr, value = last_hdr.strip().lower(), value.strip()
                 headers[last_hdr] = value
 
             if isresponse:
-                message = {
-                    "type": "response",
-                    "protocol": first_line[0],
-                    "code": first_line[1],
-                    "reason": first_line[2],
-                    "headers": headers,
-                }
+                message = HTTPMessage.response(first_line[0], first_line[1],
+                                               first_line[2], headers)
+                yield ("response", message)
             else:
-                message = {
-                    "type": "request",
-                    "method": first_line[0],
-                    "url": first_line[1],
-                    "protocol": first_line[2],
-                    "headers": headers,
-                }
+                message = HTTPMessage.request(first_line[0], first_line[1],
+                                              first_line[2], headers)
+                yield ("request", message)
 
-            yield (message["type"], message)
-
-            if headers.get(b"transfer-encoding") == b"chunked":
+            if headers.get("transfer-encoding") == "chunked":
 
                 while True:
 
@@ -183,10 +180,10 @@ class HTTPParser(object):
 
                 yield ("end", message)
 
-            elif headers.get(b"content-length"):
+            elif headers.get("content-length"):
 
                 logging.debug("* BOUNDED_BODY")
-                length = int(headers[b"content-length"])
+                length = int(headers["content-length"])
                 if length < 0:
                     raise HTTPError
                 while length > 0:
@@ -198,14 +195,14 @@ class HTTPParser(object):
                     yield ("data", message, data)
                 yield ("end", message)
 
-            elif isresponse and (first_line[1][0:1] == b"1" or
-                                 first_line[1] == b"204" or
-                                 first_line[1] == b"304"):
+            elif isresponse and (first_line[1][0:1] == "1" or
+                                 first_line[1] == "204" or
+                                 first_line[1] == "304"):
                 logging.debug("* 100_OR_2O4_OR_304")
                 yield ("end", message)
 
-            elif isresponse and (headers.get(b"connection") != b"keep-alive" or
-                                 first_line[0] == b"HTTP/1.0"):
+            elif isresponse and (headers.get("connection") != "keep-alive" or
+                                 first_line[0] == "HTTP/1.0"):
                 logging.debug("* CONNECTION_CLOSE")
                 while not self.eof_flag:
                     data = self._read(65535)
@@ -217,9 +214,9 @@ class HTTPParser(object):
                 yield ("end", message)
                 return  # Reached final state
 
-            elif isresponse and (first_line[1][0:1] == b"1" or
-                                 first_line[1] == b"204" or
-                                 first_line[1] == b"304"):
+            elif isresponse and (first_line[1][0:1] == "1" or
+                                 first_line[1] == "204" or
+                                 first_line[1] == "304"):
                 logging.debug("* RESPONSE_WITHOUT_BODY")
                 yield ("end", message)
 

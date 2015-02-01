@@ -45,11 +45,10 @@ class HTTPRequestHandlerMixin(object):
 
     def on_request_begin(self, request):
         """ Override to filter requests by headers """
-        request["body"] = []
 
     def on_request_data(self, request, data):
         """ Override to ignore incoming body """
-        request["body"].append(data)
+        request.add_body_chunk(data)
 
     def on_request_end(self, request):
         """ Override to process complete requests """

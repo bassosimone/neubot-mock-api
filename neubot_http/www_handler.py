@@ -37,8 +37,6 @@ class WWWHandler(object):
     def _resolve_path(self, path):
         """ Safely maps HTTP path to filesystem path """
 
-        path = path.decode("utf-8")              # Python3
-
         logging.debug("www: rootdir %s", self.rootdir)
         logging.debug("www: original path %s", path)
 
@@ -61,9 +59,9 @@ class WWWHandler(object):
             logging.warning("www: rootdir is not set")
             return serializer.compose_error(403, "Forbidden")
 
-        logging.debug("www: requested to serve: %s", request["url"])
+        logging.debug("www: requested to serve: %s", request.url)
 
-        path = self._resolve_path(request["url"])
+        path = self._resolve_path(request.url)
         if not path:
             return serializer.compose_error(403, "Forbidden")
 

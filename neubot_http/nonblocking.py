@@ -8,11 +8,11 @@
 """ Nonblocking code """
 
 import asyncore
-import collections
 import logging
 
 from .mixins import HTTPRequestHandlerMixin
 from .mixins import HTTPServerMixin
+from .outqueue import HTTPOutputQueue
 from .parser import HTTPParser
 
 class _RequestHandler(asyncore.dispatcher, HTTPRequestHandlerMixin):
@@ -22,7 +22,7 @@ class _RequestHandler(asyncore.dispatcher, HTTPRequestHandlerMixin):
         asyncore.dispatcher.__init__(self, sock, mapx)
         HTTPRequestHandlerMixin.__init__(self, router)
         self.parser = HTTPParser()
-        self.obuff = collections.deque()
+        self.queue = HTTPOutputQueue()
 
     def handle_read(self):
         data = self.recv(65535)
@@ -31,35 +31,20 @@ class _RequestHandler(asyncore.dispatcher, HTTPRequestHandlerMixin):
             self.parser.feed(data)
         else:
             self.parser.eof()
-        while True:
+        result = self.parser.parse()
+        while result:
+            self.queue.insert_data(self.emit(result))
             result = self.parser.parse()
-            if not result:
-                break
-            to_send = self.emit(result)
-            if to_send:
-                self.obuff.append(to_send)
 
     def writable(self):
-        return bool(self.obuff)
+        return bool(self.queue)
 
     def handle_write(self):
-        while self.obuff:
-            selected = self.obuff[0]
-            if isinstance(selected, bytes):
-                if selected:
-                    break
-                self.obuff.popleft()
-                continue
-            try:
-                data = next(selected)
-            except StopIteration:
-                self.obuff.popleft()
-            else:
-                if data:
-                    self.obuff.appendleft(data)
-                    break
-        if self.obuff:
-            self.obuff[0] = data[self.send(self.obuff[0]):]
+        chunk = self.queue.get_next_chunk()
+        if chunk:
+            chunk = chunk[self.send(chunk):]
+            if chunk:
+                self.reinsert_partial_chunk(chunk)
 
 class HTTPServerNonblocking(asyncore.dispatcher, HTTPServerMixin):
     """ Nonblocking HTTP server """
