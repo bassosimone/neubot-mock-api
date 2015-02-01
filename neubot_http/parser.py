@@ -130,11 +130,11 @@ class HTTPParser(object):
             if isresponse:
                 message = HTTPMessage.response(first_line[0], first_line[1],
                                                first_line[2], headers)
+                yield ("response", message)
             else:
                 message = HTTPMessage.request(first_line[0], first_line[1],
                                               first_line[2], headers)
-
-            yield (message["type"], message)
+                yield ("request", message)
 
             if headers.get("transfer-encoding") == "chunked":
 

@@ -41,9 +41,10 @@ class _RequestHandler(asyncore.dispatcher, HTTPRequestHandlerMixin):
 
     def handle_write(self):
         chunk = self.queue.get_next_chunk()
-        chunk = chunk[self.send(chunk):]
         if chunk:
-            self.reinsert_partial_chunk(chunk)
+            chunk = chunk[self.send(chunk):]
+            if chunk:
+                self.reinsert_partial_chunk(chunk)
 
 class HTTPServerNonblocking(asyncore.dispatcher, HTTPServerMixin):
     """ Nonblocking HTTP server """

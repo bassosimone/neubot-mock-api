@@ -52,6 +52,7 @@ class HTTPOutputQueue(object):
             except StopIteration:
                 self.queue.popleft()
             except TypeError:
+                elem = self.queue.popleft()
                 if elem:
                     if isinstance(elem, str):
                         elem = elem.encode(self.default_encoding)

@@ -39,7 +39,7 @@ class HTTPMessage(object):
         message.headers = headers
         return message
 
-    def __getattr__(self, key):
+    def __getitem__(self, key):
         return self.headers[key.lower()]
 
     def add_body_chunk(self, chunk):

@@ -44,7 +44,9 @@ class _RequestHandler(HTTPRequestHandlerMixin):
                 outqueue.insert_data(self.emit(result))
                 result = parser.parse()
             while outqueue:
-                self.request.sendall(outqueue.get_next_chunk())
+                chunk = outqueue.get_next_chunk()
+                if chunk:
+                    self.request.sendall(chunk)
             if not data:
                 break
 
