@@ -37,8 +37,6 @@ class WWWHandler(object):
     def _resolve_path(self, path):
         """ Safely maps HTTP path to filesystem path """
 
-        path = path.decode("utf-8")              # Python3
-
         logging.debug("www: rootdir %s", self.rootdir)
         logging.debug("www: original path %s", path)
 
