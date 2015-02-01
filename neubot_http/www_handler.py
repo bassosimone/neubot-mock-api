@@ -34,7 +34,7 @@ class WWWHandler(object):
             os.path.realpath(os.path.abspath(rootdir)))
         logging.debug("www: real rootdir is: %s", self.rootdir)
 
-    def _resolve_path(self, path):
+    def resolve_path(self, path):
         """ Safely maps HTTP path to filesystem path """
 
         logging.debug("www: rootdir %s", self.rootdir)
@@ -52,24 +52,17 @@ class WWWHandler(object):
 
         return path
 
-    def __call__(self, request):
-        """ Process HTTP request for WWW resource """
+    @staticmethod
+    def guess_mimetype(path):
+        """ Guess mimetype of the file at path """
+        mimetype, encoding = mimetypes.guess_type(path)
+        if not mimetype:
+            mimetype = "text/plain"
+        return mimetype, encoding
 
-        if not self.rootdir:
-            logging.warning("www: rootdir is not set")
-            return serializer.compose_error(403, "Forbidden")
+    def serve_file(self, path):
+        """ Serve the file at path  """
 
-        logging.debug("www: requested to serve: %s", request.url)
-
-        path = self._resolve_path(request.url)
-        if not path:
-            return serializer.compose_error(403, "Forbidden")
-
-        logging.debug("www: url mapped to: %s", path)
-
-        if os.path.isdir(path):
-            path = os.sep.join([path, self.default_file])
-            logging.debug("www: url isdir; trying with: %s", path)
         if not os.path.isfile(path):
             return serializer.compose_error(404, "Not Found")
 
@@ -80,9 +73,7 @@ class WWWHandler(object):
         except (OSError, IOError):
             return serializer.compose_error(404, "Not Found")
 
-        mimetype, encoding = mimetypes.guess_type(path)
-        if not mimetype:
-            mimetype = "text/plain"
+        mimetype, encoding = self.guess_mimetype(path)
 
         logging.debug("www: sending file to client")
 
@@ -90,3 +81,29 @@ class WWWHandler(object):
             "Content-Type": mimetype,
             "Content-Encoding": encoding,  # None is filtered out
         }, filep)
+
+    def serve_directory(self, path):
+        """ Serve the directory at path """
+        path = os.sep.join([path, self.default_file])
+        logging.debug("www: url isdir; trying with: %s", path)
+        return self.serve_file(path)
+
+    def __call__(self, request):
+        """ Process HTTP request for WWW resource """
+
+        if not self.rootdir:
+            logging.warning("www: rootdir is not set")
+            return serializer.compose_error(403, "Forbidden")
+
+        logging.debug("www: requested to serve: %s", request.url)
+
+        path = self.resolve_path(request.url)
+        if not path:
+            return serializer.compose_error(403, "Forbidden")
+
+        logging.debug("www: url mapped to: %s", path)
+
+        if os.path.isdir(path):
+            return self.serve_directory(path)
+        else:
+            return self.serve_file(path)
