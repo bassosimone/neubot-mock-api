@@ -13,11 +13,7 @@ import sys
 
 from .serve import serve
 
-USAGE = """\
-usage: python -m neubot_http [-m async] [-v] [-d rootdir]
-       python -m neubot_http -m forked [-v] [-d rootdir]
-       python -m neubot_http -m threaded [-v] [-d rootdir]
-       python -m neubot_http -m single [-v] [-d rootdir]"""
+USAGE = """usage: python -m neubot_http [-v] [-d rootdir]"""
 
 def main():
     """ Main function """
@@ -26,7 +22,7 @@ def main():
     level = logging.WARNING
 
     try:
-        options, arguments = getopt.getopt(sys.argv[1:], "d:m:v")
+        options, arguments = getopt.getopt(sys.argv[1:], "d:v")
     except getopt.error:
         sys.exit(USAGE)
     if arguments:
@@ -35,8 +31,6 @@ def main():
     for name, value in options:
         if name == "-d":
             settings["rootdir"] = value
-        elif name == "-m":
-            settings["mode"] = value
         elif name == "-v":
             level = logging.DEBUG
         else:
