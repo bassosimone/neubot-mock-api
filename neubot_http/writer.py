@@ -5,7 +5,7 @@
 # information on the copying conditions.
 #
 
-""" HTTP serializer """
+""" HTTP writer """
 
 import logging
 import os

@@ -14,7 +14,7 @@ import socket
 from .outqueue import HTTPOutputQueue
 from .parser import HTTPParser
 
-from . import serializer
+from . import writer
 
 class HTTPRequestHandler(asyncore.dispatcher):
     """ HTTP request handler """
@@ -89,7 +89,7 @@ class HTTPServer(asyncore.dispatcher):
         if url in self.routes:
             self.routes[url](connection, request)
         else:
-            connection.write(serializer.compose_error("404", "Not Found"))
+            connection.write(writer.compose_error("404", "Not Found"))
 
     def handle_accept(self):
         result = self.accept()

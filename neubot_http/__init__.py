@@ -23,7 +23,7 @@
              "headers": request.headers,
              "body": request.body_as_string()
          }
-         connection.write(yield neubot_http.serializer.compose_response(
+         connection.write(yield neubot_http.writer.compose_response(
              "200", "Ok", {
                  "Content-Type": "application/json",
              }, json.dumps(response, indent=4)))
@@ -39,4 +39,4 @@
 """
 
 from .core import listen
-from . import serializer
+from . import writer
