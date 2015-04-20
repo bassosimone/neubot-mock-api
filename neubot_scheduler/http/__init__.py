@@ -12,7 +12,7 @@
 
      import asyncore
      import json
-     import neubot_http
+     from neubot_scheduler import http
 
      def simple(connection, request):
          ''' Handles /URL '''
@@ -23,14 +23,13 @@
              "headers": request.headers,
              "body": request.body_as_string()
          }
-         connection.write(yield neubot_http.writer.compose_response(
-             "200", "Ok", {
+         connection.write(yield http.writer.compose_response("200", "Ok", {
                  "Content-Type": "application/json",
              }, json.dumps(response, indent=4)))
 
      def main():
          ''' Main function '''
-         neubot_http.listen({
+         http.listen({
              "routes": {
                  "/simple": simple,
              }

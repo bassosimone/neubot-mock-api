@@ -19,7 +19,7 @@ if __name__ == "__main__":
     sys.path.insert(0, os.path.dirname(os.path.dirname(
         os.path.abspath(__file__))))
 
-import neubot_http
+from neubot_scheduler import http
 
 def simple(connection, request):
     """ Handles / URL """
@@ -30,14 +30,14 @@ def simple(connection, request):
         "headers": request.headers,
         "body": request.body_as_string()
     }
-    connection.write(neubot_http.writer.compose_response("200", "Ok", {
+    connection.write(http.writer.compose_response("200", "Ok", {
         "Content-Type": "application/json",
     }, json.dumps(response, indent=4)))
 
 def main():
     """ Main function """
     logging.basicConfig(level=logging.DEBUG, format="%(message)s")
-    neubot_http.listen({
+    http.listen({
         "routes": {
             "/": simple,
         }
