@@ -80,6 +80,16 @@ class HTTPServer(asyncore.dispatcher):
 
     def route(self, connection, request):
         """ Route request """
+        try:
+            self._route(connection, request)
+        except (KeyboardInterrupt, SystemExit):
+            raise
+        except:
+            connection.write(writer.compose_error("500",
+                             "Internal Server Error"))
+
+    def _route(self, connection, request):
+        """ Internal route function """
 
         url = request.url
         logging.debug("http: router received url: %s", url)
