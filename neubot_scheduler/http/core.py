@@ -75,6 +75,8 @@ class HTTPServer(asyncore.dispatcher):
 
     def pre_check(self, connection, request):
         """ Pre check incoming request """
+        if request["expect"].lower() == "100-continue":
+            connection.write(writer.compose_headers("100", "Continue", {}))
 
     def route(self, connection, request):
         """ Route request """

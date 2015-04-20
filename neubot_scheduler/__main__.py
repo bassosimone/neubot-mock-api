@@ -7,10 +7,26 @@
 
 """ Neubot scheduler process' main() """
 
+import getopt
+import logging
+import sys
+
 from .frontend import Frontend
 
 def main():
     """ Main function """
+
+    level = logging.WARNING
+    try:
+        options, arguments = getopt.getopt(sys.argv[1:], "v")
+    except getopt.error:
+        sys.exit("Usage: neubot-scheduler [-v]")
+    for name, value in options:
+        if name == "-v":
+            level = logging.DEBUG
+
+    logging.basicConfig(format="%(message)s", level=level)
+
     frontend = Frontend()
     frontend.loop()
 
