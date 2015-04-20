@@ -48,7 +48,7 @@ class Frontend(object):
     def run_periodic_task_():
         """ Run the periodic task """
         logging.debug("periodic: trigger comet...")
-        api.state_manager.get().comet_trigger()
+        api.state_manager().comet_trigger()
 
     @staticmethod
     def _periodic_task(obj):
