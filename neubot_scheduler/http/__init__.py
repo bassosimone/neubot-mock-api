@@ -23,7 +23,7 @@
              "headers": request.headers,
              "body": request.body_as_string()
          }
-         connection.write(yield http.writer.compose_response("200", "Ok", {
+         connection.write(http.writer.compose_response("200", "Ok", {
                  "Content-Type": "application/json",
              }, json.dumps(response, indent=4)))
 

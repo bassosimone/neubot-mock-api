@@ -12,6 +12,7 @@ import logging
 import sched
 import time
 
+from . import api
 from . import utils
 from . import http
 
@@ -22,15 +23,32 @@ class Frontend(object):
         self.periodic = periodic
         self.scheduler = sched.scheduler(utils.ticks, self._poll)
         self.sched_periodic_task_()
+        http.listen({
+            "port": 9774,
+            "routes": {
+                "/api": api.api_,
+                "/api/": api.api_,
+                "/api/config": api.api_config,
+                "/api/data": api.api_data,
+                "/api/debug": api.api_debug,
+                "/api/exit": api.api_exit,
+                "/api/index": api.api_index,
+                "/api/log": api.api_log,
+                "/api/results": api.api_results,
+                "/api/state": api.api_state,
+                "/api/version": api.api_version,
+            }
+        })
 
     def sched_periodic_task_(self):
         """ Schedule periodic task """
-        self.scheduler.enter(self.periodic, 0, self._periodic_task, self)
+        self.scheduler.enter(self.periodic, 0, self._periodic_task, (self,))
 
     @staticmethod
     def run_periodic_task_():
         """ Run the periodic task """
-        logging.debug("Periodic task")
+        logging.debug("periodic: trigger comet...")
+        api.state_manager.get().comet_trigger()
 
     @staticmethod
     def _periodic_task(obj):
@@ -53,7 +71,6 @@ class Frontend(object):
 
     def loop(self):
         """ Run async loop """
-        http.listen({})
         while True:
             try:
                 self.scheduler.run()
