@@ -9,6 +9,7 @@
 
 """ Example API implementation """
 
+import asyncore
 import json
 import logging
 import os
@@ -20,7 +21,7 @@ if __name__ == "__main__":
 
 import neubot_http
 
-def simple(request):
+def simple(connection, request):
     """ Handles / URL """
     response = {
         "method": request.method,
@@ -29,18 +30,19 @@ def simple(request):
         "headers": request.headers,
         "body": request.body_as_string()
     }
-    yield neubot_http.serializer.compose_response("200", "Ok", {
+    connection.write(neubot_http.serializer.compose_response("200", "Ok", {
         "Content-Type": "application/json",
-    }, json.dumps(response, indent=4))
+    }, json.dumps(response, indent=4)))
 
 def main():
     """ Main function """
     logging.basicConfig(level=logging.DEBUG, format="%(message)s")
-    neubot_http.serve({
+    neubot_http.listen({
         "routes": {
             "/": simple,
         }
     })
+    asyncore.loop()
 
 if __name__ == "__main__":
     main()

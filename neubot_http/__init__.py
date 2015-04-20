@@ -10,10 +10,11 @@
 
  Example usage:
 
-     import neubot_http
+     import asyncore
      import json
+     import neubot_http
 
-     def simple(request):
+     def simple(connection, request):
          ''' Handles /URL '''
          response = {
              "method": request.method,
@@ -22,18 +23,20 @@
              "headers": request.headers,
              "body": request.body_as_string()
          }
-         yield neubot_http.serializer.compose_response("200", "Ok", {
-             "Content-Type": "application/json",
-         }, json.dumps(response, indent=4))
+         connection.write(yield neubot_http.serializer.compose_response(
+             "200", "Ok", {
+                 "Content-Type": "application/json",
+             }, json.dumps(response, indent=4)))
 
      def main():
          ''' Main function '''
-         neubot_http.serve({
+         neubot_http.listen({
              "routes": {
                  "/simple": simple,
              }
          })
+         asyncore.loop()
 """
 
-from .serve import serve
+from .core import listen
 from . import serializer
