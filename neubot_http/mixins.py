@@ -8,28 +8,16 @@
 """ Mixins used throughout the code """
 
 from .router import HTTPRouter
-from .www_handler import WWWHandler
 
 class HTTPServerMixin(object):
     """ Common behavior of HTTP servers """
 
     def __init__(self):
         self.router = HTTPRouter()
-        self.www_handler = WWWHandler()
-        self.router.add_default_route(self.www_handler)
-
-    def override_www_handler(self, www_handler):
-        """ Override the WWW handler """
-        self.www_handler = www_handler
-        self.router.add_default_route(self.www_handler)
 
     def add_route(self, url, generator):
         """ Add route """
         self.router.add_route(url, generator)
-
-    def set_rootdir(self, rootdir):
-        """ Add default route """
-        self.www_handler.set_rootdir(rootdir)
 
 class HTTPRequestHandlerMixin(object):
     """ Common behavior of HTTP request handlers """

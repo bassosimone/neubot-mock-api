@@ -43,7 +43,6 @@ def serve(settings):
     settings.setdefault("port", 8080)
     settings.setdefault("rootdir", "")
     settings.setdefault("routes", {})
-    settings.setdefault("www_handler", None)
 
     epnt = settings["hostname"], int(settings["port"])
 
@@ -51,8 +50,6 @@ def serve(settings):
 
     if settings["mode"] == "async":
         server = HTTPServerNonblocking()
-        if settings["www_handler"]:
-            server.override_www_handler(settings["www_handler"]())
         for key in settings["routes"]:
             server.add_route(key, settings["routes"][key])
         server.set_rootdir(settings["rootdir"])
@@ -64,8 +61,6 @@ def serve(settings):
 
     else:
         factory = HTTPRequestHandlerFactory()
-        if settings["www_handler"]:
-            factory.override_www_handler(settings["www_handler"]())
         for key in settings["routes"]:
             factory.add_route(key, settings["routes"][key])
         factory.set_rootdir(settings["rootdir"])
