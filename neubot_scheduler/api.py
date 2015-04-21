@@ -9,13 +9,10 @@
 
 import cgi
 import json
-import logging
-import os
 
 from . import backend
 from . import http
 from . import state_manager
-from . import utils
 
 def api_(connection, _):
     """ Implements /api/ API """
@@ -31,9 +28,8 @@ def api_config(connection, request):
     if index >= 0:
         query = request.url[index + 1:]
 
-    labels = 0
     dictionary = cgi.parse_qs(query)
-    if "labels" in dictionary:
+    if "labels" in dictionary and int(dictionary["labels"][0]):
         backend.get().get_config(connection, True)
     elif request.method == "POST":
         incoming = json.loads(request.body_as_string("utf-8"))
