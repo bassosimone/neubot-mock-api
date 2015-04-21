@@ -9,6 +9,7 @@
 
 import cgi
 import json
+import logging
 
 from . import backend
 from . import http
@@ -86,7 +87,7 @@ def api_data(connection, request):
     if "until" in dictionary:
         until = int(dictionary["until"][0])
 
-    backend.get().query_data(connection, test, since, until);
+    backend.get().query_data(connection, test, since, until)
 
 def api_debug(connection, _):
     """ Implements /api/debug API """
@@ -131,6 +132,24 @@ def api_results(connection, request):
         test = str(dictionary["test"][0])
 
     backend.get().query_tests(connection, test)
+
+def api_runner(connection, request):
+    """ Implements /api/runner API """
+
+    query = ""
+    index = request.url.find("?")
+    if index >= 0:
+        query = request.url[index + 1:]
+
+    streaming = 0
+    test = ""
+    dictionary = cgi.parse_qs(query)
+    if "streaming" in dictionary:
+        streaming = int(dictionary["streaming"][0])
+    if "test" in dictionary:
+        test = str(dictionary["test"][0])
+
+    backend.get().runner(connection, test, streaming)
 
 def api_state(connection, request):
     """ Implements /api/state API """

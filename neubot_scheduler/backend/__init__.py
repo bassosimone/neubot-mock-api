@@ -36,6 +36,12 @@ class Backend(object):
             "Content-Type": "application/json",
         }, "{}"))
 
+    def runner(self, connection, test, streaming):
+        """ Trigger the runner """
+        connection.write(http.writer.compose_response("200", "Ok", {
+            "Content-Type": "application/json",
+        }, "{}"))
+
     def set_config(self, connection, updated_settings):
         """ Change settings """
         connection.write(http.writer.compose_response("200", "Ok", {

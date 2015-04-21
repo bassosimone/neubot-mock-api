@@ -35,6 +35,7 @@ class Frontend(object):
                 "/api/index": api.api_index,
                 "/api/log": api.api_log,
                 "/api/results": api.api_results,
+                "/api/runner": api.api_runner,
                 "/api/state": api.api_state,
                 "/api/version": api.api_version,
             }
