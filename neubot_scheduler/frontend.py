@@ -14,6 +14,7 @@ import time
 
 from . import api
 from . import backend
+from . import state_manager
 from . import utils
 from . import http
 
@@ -51,7 +52,7 @@ class Frontend(object):
     def run_periodic_task_():
         """ Run the periodic task """
         logging.debug("periodic: trigger comet...")
-        api.state_manager().comet_trigger()
+        state_manager.get().comet_trigger()
 
     @staticmethod
     def _periodic_task(obj):

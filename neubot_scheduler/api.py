@@ -14,49 +14,8 @@ import os
 
 from . import backend
 from . import http
+from . import state_manager
 from . import utils
-
-class StateManager(object):
-    """ State manager """
-
-    def __init__(self):
-        self.comet_pending = []
-        self.events = {
-            "since": utils.timestamp(),
-            "pid": os.getpid(),
-        }
-        self.current = "idle"
-        self.tsnap = utils.opaque_time()
-
-    def serialize(self):
-        """ Serialize state manager """
-        return http.writer.compose_response("200", "Ok", {
-            "Content-Type": "application/json",
-        }, json.dumps({
-            "events": self.events,
-            "current": self.current,
-            "t": self.tsnap,
-        }))
-
-    def comet_wait(self, connection):
-        self.comet_pending.append(connection)
-
-    def comet_trigger(self):
-        comet_pending = self.comet_pending
-        self.comet_pending = []
-        for connection in comet_pending:
-            try:
-                connection.write(self.serialize())
-            except (KeyboardInterrupt, SystemExit):
-                raise
-            except:
-                logging.warning("unhandled exception", exc_info=1)
-
-STATE_MANAGER = StateManager()
-
-def state_manager():
-    """ Get singleton instance """
-    return STATE_MANAGER
 
 def api_(connection, _):
     """ Implements /api/ API """
@@ -166,11 +125,11 @@ def api_runner(connection, request):
 def api_state(connection, request):
     """ Implements /api/state API """
     if "?" not in request.url:
-        connection.write(state_manager().serialize())
+        connection.write(state_manager.get().serialize())
     elif request.url.endswith("?t=0"):
-        connection.write(state_manager().serialize())
+        connection.write(state_manager.get().serialize())
     else:
-        state_manager().comet_wait(connection)
+        state_manager.get().comet_wait(connection)
 
 def api_version(connection, _):
     """ Implements /api/version API """
