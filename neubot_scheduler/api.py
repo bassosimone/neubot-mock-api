@@ -12,6 +12,7 @@ import json
 
 from . import backend
 from . import http
+from . import runner
 from . import state_manager
 
 def api_(connection, _):
@@ -116,7 +117,7 @@ def api_runner(connection, request):
     if "test" in dictionary:
         test = str(dictionary["test"][0])
 
-    backend.get().runner(connection, test, streaming)
+    runner.get().run(connection, test, streaming)
 
 def api_state(connection, request):
     """ Implements /api/state API """
