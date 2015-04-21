@@ -40,6 +40,7 @@ def compose(first_line, headers, before, filep, after):
             logging.debug("> %s: %s", name, value)
             header = "%s: %s\r\n" % (name, value)
             yield header
+    yield "Access-Control-Allow-Origin: *\r\n"
     yield "\r\n"
 
     if before:
