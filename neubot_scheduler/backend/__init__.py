@@ -36,6 +36,12 @@ class Backend(object):
             "Content-Type": "application/json",
         }, "{}"))
 
+    def rootdir(self, connection):
+        """ Generates the default HTML page """
+        connection.write(http.writer.compose_response("200", "Ok", {
+            "Content-Type": "text/html",
+        }, "<html></html>"))
+
     def runner(self, connection, test, streaming):
         """ Trigger the runner """
         connection.write(http.writer.compose_response("200", "Ok", {
