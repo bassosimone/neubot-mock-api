@@ -12,8 +12,8 @@ import logging
 import sched
 import time
 
-from . import api
 from . import backend
+from . import router
 from . import state_manager
 from . import utils
 from . import http
@@ -28,19 +28,19 @@ class Frontend(object):
         http.listen({
             "port": 9774,
             "routes": {
-                "/": api.rootdir,
-                "/api": api.api_,
-                "/api/": api.api_,
-                "/api/config": api.api_config,
-                "/api/data": api.api_data,
-                "/api/debug": api.api_debug,
-                "/api/exit": api.api_exit,
-                "/api/index": api.api_index,
-                "/api/log": api.api_log,
-                "/api/results": api.api_results,
-                "/api/runner": api.api_runner,
-                "/api/state": api.api_state,
-                "/api/version": api.api_version,
+                "/": router.rootdir,
+                "/api": router.api_,
+                "/api/": router.api_,
+                "/api/config": router.api_config,
+                "/api/data": router.api_data,
+                "/api/debug": router.api_debug,
+                "/api/exit": router.api_exit,
+                "/api/index": router.api_index,
+                "/api/log": router.api_log,
+                "/api/results": router.api_results,
+                "/api/runner": router.api_runner,
+                "/api/state": router.api_state,
+                "/api/version": router.api_version,
             }
         })
 

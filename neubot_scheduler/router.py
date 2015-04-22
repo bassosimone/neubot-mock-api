@@ -5,7 +5,7 @@
 # information on the copying conditions.
 #
 
-""" Neubot scheduler API """
+""" Requests router """
 
 import cgi
 import json
