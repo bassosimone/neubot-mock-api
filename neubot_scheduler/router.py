@@ -90,20 +90,9 @@ def api_log(connection, request):
 
     log_manager.get().query_logs(connection, reverse, verbosity)
 
-def api_results(connection, request):
-    """ Implements /api/results API """
-
-    query = ""
-    index = request.url.find("?")
-    if index >= 0:
-        query = request.url[index + 1:]
-
-    test = ""
-    dictionary = cgi.parse_qs(query)
-    if "test" in dictionary:
-        test = str(dictionary["test"][0])
-
-    specs_manager.get().query_tests(connection, test)
+def api_specs(connection, request):
+    """ Implements /api/specs API """
+    specs_manager.get().query_specs(connection)
 
 def api_runner(connection, request):
     """ Implements /api/runner API """

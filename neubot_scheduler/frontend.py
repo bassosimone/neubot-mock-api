@@ -37,8 +37,8 @@ class Frontend(object):
                 "/api/exit": router.api_exit,
                 "/api/index": router.api_index,
                 "/api/log": router.api_log,
-                "/api/results": router.api_results,
                 "/api/runner": router.api_runner,
+                "/api/specs": router.api_specs,
                 "/api/state": router.api_state,
                 "/api/version": router.api_version,
             }
