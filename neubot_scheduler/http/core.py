@@ -86,6 +86,7 @@ class HTTPServer(asyncore.dispatcher):
         except (KeyboardInterrupt, SystemExit):
             raise
         except:
+            logging.warning("unhandled exception", exc_info=1)
             connection.write(writer.compose_error("500",
                              "Internal Server Error"))
 
