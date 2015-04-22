@@ -7,4 +7,3 @@
 
 """ Neubot scheduler process """
 
-from . import http

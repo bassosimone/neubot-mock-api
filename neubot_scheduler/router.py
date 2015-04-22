@@ -10,12 +10,12 @@
 import cgi
 import json
 
-from .backend import state_manager
+from .backend import config_manager
+from .backend import data_manager
+from .backend import log_manager
 from .backend import runner
-from .backend import table_config
-from .backend import table_data
-from .backend import table_log
-from .backend import table_test
+from .backend import state_manager
+from .backend import tests_manager
 
 from . import http
 
@@ -35,12 +35,12 @@ def api_config(connection, request):
 
     dictionary = cgi.parse_qs(query)
     if "labels" in dictionary and int(dictionary["labels"][0]):
-        table_config.get().get_config(connection, True)
+        config_manager.get().get_config(connection, True)
     elif request.method == "POST":
         incoming = json.loads(request.body_as_string("utf-8"))
-        table_config.get().set_config(connection, incoming)
+        config_manager.get().set_config(connection, incoming)
     else:
-        table_config.get().get_config(connection, False)
+        config_manager.get().get_config(connection, False)
 
 def api_data(connection, request):
     """ Implements /api/data API """
@@ -59,7 +59,7 @@ def api_data(connection, request):
     if "until" in dictionary:
         until = int(dictionary["until"][0])
 
-    table_data.get().query_data(connection, test, since, until)
+    data_manager.get().query_data(connection, test, since, until)
 
 def api_debug(connection, _):
     """ Implements /api/debug API """
@@ -88,7 +88,7 @@ def api_log(connection, request):
     if "verbosity" in dictionary:
         verbosity = int(dictionary["verbosity"][0])
 
-    table_log.get().query_logs(connection, reverse, verbosity)
+    log_manager.get().query_logs(connection, reverse, verbosity)
 
 def api_results(connection, request):
     """ Implements /api/results API """
@@ -103,7 +103,7 @@ def api_results(connection, request):
     if "test" in dictionary:
         test = str(dictionary["test"][0])
 
-    table_test.get().query_tests(connection, test)
+    tests_manager.get().query_tests(connection, test)
 
 def api_runner(connection, request):
     """ Implements /api/runner API """
