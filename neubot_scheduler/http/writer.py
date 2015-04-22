@@ -19,7 +19,7 @@ def compose(first_line, headers, before, filep, after):
     ischunked = False
     for name in headers:
         ischunked = (name.lower() == "transfer-encoding" and
-            headers[name].lower() == "chunked")
+                     headers[name].lower() == "chunked")
         if ischunked:
             break
 

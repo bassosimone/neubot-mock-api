@@ -138,6 +138,6 @@ def api_version(connection, _):
         "Content-Type": "text/plain",
     }, "0.5.0.0"))
 
-def rootdir(connection, request):
+def rootdir(connection, _):
     """ Handler of the / URL """
     state_manager.get().rootdir(connection)
