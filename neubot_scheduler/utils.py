@@ -25,3 +25,15 @@ def ticks():
         ONLY, and you must not use it with timestamp semantics. """
     return __TICKS()
 
+def opaque_time():
+    """ Returns the opaque time, i.e. the time used to identify
+        events by the web user interface.  This is an integer, and
+        is calculated as follows: ``int(10^6 * ticks())``.  So,
+        the same caveat regarding ticks() also applies to this
+        function. """
+    return int(1000000 * ticks())
+
+def timestamp():
+    """ Returns an integer representing the number of seconds elapsed
+        since the EPOCH in UTC. """
+    return int(time.time())

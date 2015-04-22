@@ -3,7 +3,7 @@
 from setuptools import setup
 
 setup(name="neubot_scheduler",
-      version="1.0.0.0",
+      version="0.5.0.0",
       author="Simone Basso",
       author_email="bassosimone@gmail.com",
       description="Neubot scheduler process",

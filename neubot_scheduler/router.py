@@ -5,45 +5,19 @@
 # information on the copying conditions.
 #
 
-""" Neubot scheduler API """
+""" Requests router """
 
 import cgi
 import json
 
-from . import backend
+from .backend import config_manager
+from .backend import data_manager
+from .backend import log_manager
+from .backend import runner
+from .backend import state_manager
+from .backend import specs_manager
+
 from . import http
-
-class StateManager(object):
-    """ State manager """
-
-    def __init__(self):
-        self.pending = []
-
-    def serialize(self):
-        """ Serialize state manager """
-        return http.writer.compose_response("200", "Ok", {
-            "Content-Type": "application/json",
-        }, "{}")
-
-    def comet_wait(self, connection):
-        self.pending.append(connection)
-
-    def comet_trigger(self):
-        pending = self.pending
-        self.pending = []
-        for connection in pending:
-            try:
-                connection.write(self.serialize())
-            except (KeyboardInterrupt, SystemExit):
-                raise
-            except:
-                logging.warning("unhandled exception", exc_info=1)
-
-STATE_MANAGER = StateManager()
-
-def state_manager():
-    """ Get singleton instance """
-    return STATE_MANAGER
 
 def api_(connection, _):
     """ Implements /api/ API """
@@ -59,15 +33,14 @@ def api_config(connection, request):
     if index >= 0:
         query = request.url[index + 1:]
 
-    labels = 0
     dictionary = cgi.parse_qs(query)
-    if "labels" in dictionary:
-        backend.get().get_config(connection, True)
+    if "labels" in dictionary and int(dictionary["labels"][0]):
+        config_manager.get().get_config(connection, True)
     elif request.method == "POST":
         incoming = json.loads(request.body_as_string("utf-8"))
-        backend.get().set_config(connection, incoming)
+        config_manager.get().set_config(connection, incoming)
     else:
-        backend.get().get_config(connection, False)
+        config_manager.get().get_config(connection, False)
 
 def api_data(connection, request):
     """ Implements /api/data API """
@@ -86,7 +59,7 @@ def api_data(connection, request):
     if "until" in dictionary:
         until = int(dictionary["until"][0])
 
-    backend.get().query_data(connection, test, since, until);
+    data_manager.get().query_data(connection, test, since, until)
 
 def api_debug(connection, _):
     """ Implements /api/debug API """
@@ -115,34 +88,45 @@ def api_log(connection, request):
     if "verbosity" in dictionary:
         verbosity = int(dictionary["verbosity"][0])
 
-    backend.get().query_logs(connection, reverse, verbosity)
+    log_manager.get().query_logs(connection, reverse, verbosity)
 
-def api_results(connection, request):
-    """ Implements /api/results API """
+def api_specs(connection, request):
+    """ Implements /api/specs API """
+    specs_manager.get().query_specs(connection)
+
+def api_runner(connection, request):
+    """ Implements /api/runner API """
 
     query = ""
     index = request.url.find("?")
     if index >= 0:
         query = request.url[index + 1:]
 
+    streaming = 0
     test = ""
     dictionary = cgi.parse_qs(query)
+    if "streaming" in dictionary:
+        streaming = int(dictionary["streaming"][0])
     if "test" in dictionary:
         test = str(dictionary["test"][0])
 
-    backend.get().query_tests(connection, test)
+    runner.get().run(connection, test, streaming)
 
 def api_state(connection, request):
     """ Implements /api/state API """
     if "?" not in request.url:
-        connection.write(state_manager().serialize())
+        connection.write(state_manager.get().serialize())
     elif request.url.endswith("?t=0"):
-        connection.write(state_manager().serialize())
+        connection.write(state_manager.get().serialize())
     else:
-        state_manager().comet_wait(connection)
+        state_manager.get().comet_wait(connection)
 
 def api_version(connection, _):
     """ Implements /api/version API """
     connection.write(http.writer.compose_response("200", "Ok", {
         "Content-Type": "text/plain",
     }, "0.5.0.0"))
+
+def rootdir(connection, _):
+    """ Handler of the / URL """
+    state_manager.get().rootdir(connection)
