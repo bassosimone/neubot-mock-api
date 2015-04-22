@@ -8,7 +8,6 @@
 """ Configuration manager """
 
 import json
-import logging
 import os
 import uuid
 
@@ -34,7 +33,8 @@ class ConfigManager(object):
         self._initialize(conf)
         self.write_config(conf)
 
-    def _initialize(self, conf):
+    @staticmethod
+    def _initialize(conf):
         """ Sanitize configuration """
         if "uuid" not in conf:
             conf["uuid"] = str(uuid.uuid4())
