@@ -15,7 +15,7 @@ from .backend import data_manager
 from .backend import log_manager
 from .backend import runner
 from .backend import state_manager
-from .backend import tests_manager
+from .backend import specs_manager
 
 from . import http
 
@@ -103,7 +103,7 @@ def api_results(connection, request):
     if "test" in dictionary:
         test = str(dictionary["test"][0])
 
-    tests_manager.get().query_tests(connection, test)
+    specs_manager.get().query_tests(connection, test)
 
 def api_runner(connection, request):
     """ Implements /api/runner API """
