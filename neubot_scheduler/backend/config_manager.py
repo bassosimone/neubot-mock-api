@@ -8,18 +8,13 @@
 """ Configuration manager """
 
 import json
-import sqlite3
+import logging
+import os
 import uuid
 
 from .. import http
 
-DATABASE_FILE = "config.sqlite3"
-
-CREATE_QUERY = """CREATE TABLE IF NOT EXISTS config(
-    name TEXT PRIMARY KEY,
-    value TEXT);"""
-
-UPDATE_QUERY = "INSERT OR REPLACE INTO config VALUES( ?,?);"
+BASEDIR = "./config/"
 
 VALID_VARIABLES = {
     "enabled": int,
@@ -35,29 +30,36 @@ class ConfigManager(object):
     """ Configuration manager class """
 
     def __init__(self):
-        self.connection = sqlite3.connect(DATABASE_FILE)
-        self.connection.row_factory = sqlite3.Row
-        self.connection.execute(CREATE_QUERY)
         conf = self.read_config()
-        for name in conf:
-            if name not in VALID_VARIABLES:
-                del conf[name]
+        self._initialize(conf)
+        self.write_config(conf)
+
+    def _initialize(self, conf):
+        """ Sanitize configuration """
         if "uuid" not in conf:
             conf["uuid"] = str(uuid.uuid4())
         if "enabled" not in conf:
             conf["enabled"] = 1
-        self.write_config(conf)
-        self.connection.commit()
+
+    @staticmethod
+    def read_variable(name):
+        """ Read single configuration variable """
+        if name not in VALID_VARIABLES:
+            return
+        path = os.path.join(BASEDIR, name)
+        if not os.path.isfile(path):
+            return
+        with open(path, "r") as filep:
+            value = filep.read().strip()
+            return VALID_VARIABLES[name](value)
 
     def read_config(self):
         """ Internal function to get config """
         conf = {}
-        cursor = self.connection.cursor()
-        cursor.execute("SELECT name, value FROM config;")
-        for name, value in cursor:
-            if name not in VALID_VARIABLES:
-                continue
-            conf[name] = VALID_VARIABLES[name](value)
+        for name in os.listdir(BASEDIR):
+            value = self.read_variable(name)
+            if value is not None:
+                conf[name] = value
         return conf
 
     def get_config(self, connection, wants_labels):
@@ -70,10 +72,19 @@ class ConfigManager(object):
             "Content-Type": "application/json",
         }, json.dumps(obj_to_dump)))
 
+    @staticmethod
+    def write_variable(name, value):
+        """ Write single configuration variable """
+        if name not in VALID_VARIABLES:
+            return
+        path = os.path.join(BASEDIR, name)
+        with open(path, "w") as filep:
+            filep.write(str(value) + "\n")
+
     def write_config(self, dictionary):
         """ Internal function to set config """
-        self.connection.executemany(UPDATE_QUERY, dictionary.items())
-        self.connection.commit()
+        for name, value in dictionary.items():
+            self.write_variable(name, value)
 
     def set_config(self, connection, updated_settings):
         """ Change settings """
