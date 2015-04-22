@@ -28,7 +28,7 @@ class Frontend(object):
         http.listen({
             "port": 9774,
             "routes": {
-                "/": self._root,
+                "/": api.rootdir,
                 "/api": api.api_,
                 "/api/": api.api_,
                 "/api/config": api.api_config,
@@ -82,7 +82,3 @@ class Frontend(object):
                 raise
             except:
                 logging.error("frontend: unhandled exception", exc_info=1)
-
-    def _root(self, connection, request):
-        """ Handler of the / URL """
-        state_manager.get().rootdir(connection)

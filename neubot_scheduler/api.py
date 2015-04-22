@@ -133,3 +133,7 @@ def api_version(connection, _):
     connection.write(http.writer.compose_response("200", "Ok", {
         "Content-Type": "text/plain",
     }, "0.5.0.0"))
+
+def rootdir(connection, request):
+    """ Handler of the / URL """
+    state_manager.get().rootdir(connection)
