@@ -21,5 +21,5 @@ class Runner(object):
 RUNNER = Runner()
 
 def get():
-    """ Get the default backend """
+    """ Get the default runner """
     return RUNNER
