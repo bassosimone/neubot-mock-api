@@ -52,6 +52,13 @@ class StateManager(object):
             except:
                 logging.warning("unhandled exception", exc_info=1)
 
+    def rootdir(self, connection):
+        """ Generates the default HTML page """
+        connection.write(http.writer.compose_response("200", "Ok", {
+            "Content-Type": "text/html",
+        }, "<html></html>"))
+
+
 STATE_MANAGER = StateManager()
 
 def get():

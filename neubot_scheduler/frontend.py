@@ -85,4 +85,4 @@ class Frontend(object):
 
     def _root(self, connection, request):
         """ Handler of the / URL """
-        backend.get().rootdir(connection)
+        state_manager.get().rootdir(connection)
