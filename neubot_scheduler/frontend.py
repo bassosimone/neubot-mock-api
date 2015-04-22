@@ -12,9 +12,10 @@ import logging
 import sched
 import time
 
+from .backend import state_manager
+
 from . import backend
 from . import router
-from . import state_manager
 from . import utils
 from . import http
 

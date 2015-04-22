@@ -7,7 +7,7 @@
 
 """ Runner """
 
-from . import http
+from .. import http
 
 class Runner(object):
     """ Runner class """

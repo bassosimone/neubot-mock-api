@@ -11,8 +11,8 @@ import json
 import logging
 import os
 
-from . import http
-from . import utils
+from .. import http
+from .. import utils
 
 class StateManager(object):
     """ State manager """

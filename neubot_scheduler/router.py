@@ -10,10 +10,11 @@
 import cgi
 import json
 
+from .backend import state_manager
+from .backend import runner
+
 from . import backend
 from . import http
-from . import runner
-from . import state_manager
 
 def api_(connection, _):
     """ Implements /api/ API """
