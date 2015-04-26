@@ -6,17 +6,17 @@
  */
 
 //
-// Integration test for /api/config
+// Integration test for /api/data
 //
 
 var http = require("http");
 
-var changeConfig = function(requestBody) {
+var getData = function(testName) {
 
     var options = {
         hostname: '127.0.0.1',
         port: 9774,
-        path: '/api/2/config',
+        path: '/api/2/data',
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -32,9 +32,11 @@ var changeConfig = function(requestBody) {
         });
     });
 
+    var requestBody = {
+        test: testName
+    };
+
     request.end(JSON.stringify(requestBody));
 };
 
-changeConfig({
-    enabled: 0
-});
+getData("neubot_speedtest");

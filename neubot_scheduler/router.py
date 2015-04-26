@@ -31,11 +31,11 @@ class Router(object):
             "/api/": self.serve_api,
             "/api/2/config/labels": self.serve_api_2_config_labels,
             "/api/2/config": self.serve_api_2_config,
+            "/api/2/data": self.serve_api_2_data,
             "/api/2/runner": self.serve_api_2_runner,
-            "/api/data": self.serve_api_data,
-            "/api/debug": self.serve_api_debug,
+            "/api/debug": self.not_implemented,
             "/api/exit": self.serve_api_exit,
-            "/api/index": self.serve_api_index,
+            "/api/index": self.not_implemented,
             "/api/log": self.serve_api_log,
             "/api/state": self.serve_api_state,
             "/api/tests": self.serve_api_tests,
@@ -72,30 +72,20 @@ class Router(object):
             "Content-Type": "application/json",
         }, json.dumps(self.config_db.select())))
 
-    def serve_api_data(self, connection, request):
-        """ Manages /api/data URL """
-        query = ""
-        index = request.url.find("?")
-        if index >= 0:
-            query = request.url[index + 1:]
-        test, since, until, offset, limit = "", 0, utils.timestamp(), 0, 128
-        params = cgi.parse_qs(query)
-        if "test" in params:
-            test = str(params["test"][0])
-        if "since" in params:
-            since = int(params["since"][0])
-        if "until" in params:
-            until = int(params["until"][0])
-        if "offset" in params:
-            offset = int(params["offset"][0])
-        if "limit" in params:
-            limit = int(params["limit"][0])
+    def serve_api_2_data(self, connection, request):
+        """ Manages /api/2/data URL """
+        request_body = json.loads(request.body_as_string("utf-8"))
         connection.write(http.writer.compose_response("200", "Ok", {
             "Content-Type": "application/json",
-        }, json.dumps(self.data_db.select(test, since, until, offset, limit))))
+        }, json.dumps(self.data_db.select(
+            request_body["test"],
+            request_body.get("since", 0),
+            request_body.get("until", utils.timestamp()),
+            request_body.get("offset", 0),
+            request_body.get("limit", 128)))))
 
     @staticmethod
-    def serve_api_debug(connection, _):
+    def not_implemented(connection, _):
         """ Manages /api/debug URL """
         connection.write(http.writer.compose_error("501", "Not Implemented"))
 
@@ -103,11 +93,6 @@ class Router(object):
     def serve_api_exit(*_):
         """ Manages /api/exit URL """
         raise KeyboardInterrupt
-
-    @staticmethod
-    def serve_api_index(connection, _):
-        """ Manages /api/index URL """
-        connection.write(http.writer.compose_error("501", "Not Implemented"))
 
     def serve_api_log(self, connection, request):
         """ Manages /api/log URL """
