@@ -145,7 +145,7 @@ class Router(object):
                 raise RuntimeError("Invalid parameter")
             command_line.append(value)
         logging.debug("/api/runner: expanded cmdline: %s", command_line)
-        self.runner.run(command_line)
+        self.runner.run(test, command_line)
         connection.write(http.writer.compose_response("200", "Ok", {
             "Content-Type": "application/json",
         }, "{}"))

@@ -32,12 +32,16 @@ class RunnerOnce(object):
         with open(os.path.join(self.pendingdir, name), "w+") as filep:
             filep.write("%s\n" % content)
 
-    def __init__(self, complete, schedule, basedir, command_line, **kwargs):
+    def __init__(self, complete, schedule, basedir, test_name,
+                 command_line, **kwargs):
         self.complete = complete
         self.basedir = basedir
 
         self.pendingdir = self._make_pendingdir(self.basedir)
         logging.debug("runner: pendingdir: %s", self.pendingdir)
+        self._quickly_write_file("spec", "1.0")
+        self._quickly_write_file("test_name", test_name)
+        self._quickly_write_file("status", "pre_exec")
 
         self.max_runtime = kwargs.get("max_runtime", 30)
         self.started = utils.timestamp()
@@ -101,12 +105,12 @@ class Runner(object):
         self.basedir = basedir
         self.child = None
 
-    def run(self, command_line, **kwargs):
+    def run(self, test_name, command_line, **kwargs):
         """ Run child process """
         if self.child:
             raise RuntimeError("child already running")
         self.child = RunnerOnce(self.complete_, self.schedule, self.basedir,
-                                command_line, **kwargs)
+                                test_name, command_line, **kwargs)
 
     def complete_(self):
         """ Called when the child is done """

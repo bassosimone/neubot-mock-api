@@ -11,7 +11,7 @@
 
 var http = require("http");
 
-var startTest = function(testName, domain) {
+var startTest = function(testName, testParams) {
 
     var options = {
         hostname: '127.0.0.1',
@@ -34,13 +34,22 @@ var startTest = function(testName, domain) {
 
     var requestBody = {
         test: testName,
-        params: {
-            '$domain': domain
-        }
+        params: testParams
     };
 
     request.end(JSON.stringify(requestBody));
 };
 
-startTest("mtr", "8.8.8.8");
-//startTest("traceroute", "8.8.8.8");
+/*
+startTest("mtr", {
+    "$domain": "8.8.8.8"
+})
+
+startTest("traceroute", {
+    "$domain": "8.8.8.8"
+})
+*/
+
+startTest("wget", {
+    "$url": "https://didattica.polito.it/tesi/SaperComunicare.pdf"
+})
