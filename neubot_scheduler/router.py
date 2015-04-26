@@ -29,13 +29,14 @@ class Router(object):
         self.routes = {
             "/api": self.serve_api,
             "/api/": self.serve_api,
-            "/api/config": self.serve_api_config,
+            "/api/2/config/labels": self.serve_api_2_config_labels,
+            "/api/2/config": self.serve_api_2_config,
+            "/api/2/runner": self.serve_api_2_runner,
             "/api/data": self.serve_api_data,
             "/api/debug": self.serve_api_debug,
             "/api/exit": self.serve_api_exit,
             "/api/index": self.serve_api_index,
             "/api/log": self.serve_api_log,
-            "/api/runner": self.serve_api_runner,
             "/api/state": self.serve_api_state,
             "/api/tests": self.serve_api_tests,
             "/api/version": self.serve_api_tests,
@@ -55,24 +56,21 @@ class Router(object):
             "Content-Type": "application/json",
         }, json.dumps(list(connection.server.routes.keys()))))
 
-    def serve_api_config(self, connection, request):
-        """ Manages /api/config URL """
-        query = ""
-        index = request.url.find("?")
-        if index >= 0:
-            query = request.url[index + 1:]
-        params = cgi.parse_qs(query)
-        if "labels" in params and int(params["labels"][0]):
-            body_out = self.config_db.select(True)
-        elif request.method == "POST":
-            body_in = json.loads(request.body_as_string("utf-8"))
-            self.config_db.update(body_in, True)
-            body_out = {}
-        else:
-            body_out = self.config_db.select(False)
+    def serve_api_2_config_labels(self, connection, request):
+        """ Manages /api/2/config/labels URL """
         connection.write(http.writer.compose_response("200", "Ok", {
             "Content-Type": "application/json",
-        }, json.dumps(body_out)))
+        }, json.dumps(self.config_db.select_labels())))
+
+    def serve_api_2_config(self, connection, request):
+        """ Manages /api/2/config URL """
+        request_body = request.body_as_string("utf-8")
+        if request_body:
+            request_body = json.loads(request_body)
+            self.config_db.update(request_body)
+        connection.write(http.writer.compose_response("200", "Ok", {
+            "Content-Type": "application/json",
+        }, json.dumps(self.config_db.select())))
 
     def serve_api_data(self, connection, request):
         """ Manages /api/data URL """
@@ -127,8 +125,8 @@ class Router(object):
             "Content-Type": "application/json",
         }, json.dumps(self.log_db.select(since, until))))
 
-    def serve_api_runner(self, connection, request):
-        """ Manages /api/runner URL """
+    def serve_api_2_runner(self, connection, request):
+        """ Manages /api/2/runner URL """
         request_body = json.loads(request.body_as_string("utf-8"))
         test = request_body["test"]
         descr = self.net_tests_db.read_one(test)

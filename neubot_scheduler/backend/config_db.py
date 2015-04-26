@@ -31,26 +31,29 @@ class ConfigDB(object):
         self.conn.execute("""CREATE TABLE IF NOT EXISTS config(
                              name TEXT PRIMARY KEY,
                              value TEXT);""")
-        conf = self.select(False)
+        conf = self.select()
         for name in self.variables:
             if name not in conf:
                 self.conn.execute("INSERT INTO config VALUES(?, ?);", (name,
                                   self.variables[name]["default_value"]))
         self.conn.commit()
 
-    def select(self, want_labels):
-        """ Select configuration variables or labels """
+    def select(self):
+        """ Select configuration variables """
         result = {}
-        if not want_labels:
-            cursor = self.conn.cursor()
-            cursor.execute("SELECT name, value FROM config;")
-            for name, value in cursor:
-                if name in self.variables:
-                    value = self.variables[name]["cast"](value)
-                    result[name] = value
-        else:
-            for name in self.variables:
-                result[name] = self.variables[name]["label"]
+        cursor = self.conn.cursor()
+        cursor.execute("SELECT name, value FROM config;")
+        for name, value in cursor:
+            if name in self.variables:
+                value = self.variables[name]["cast"](value)
+                result[name] = value
+        return result
+
+    def select_labels(self):
+        """ Select configuration labels """
+        result = {}
+        for name in self.variables:
+            result[name] = self.variables[name]["label"]
         return result
 
     def update(self, dictionary):
