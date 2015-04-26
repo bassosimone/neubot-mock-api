@@ -20,7 +20,6 @@ class StateTracker(object):
             opaque_time = utils.opaque_time
         self.opaque_time = opaque_time
         self.current = ""
-        self.dirty = False
         self.events = {
             "since": utils.timestamp(),
             "pid": os.getpid(),
@@ -45,18 +44,15 @@ class StateTracker(object):
         self.current = current
         self.tsnap = self.opaque_time()
         self.events[current] = event
-        self.dirty = True
 
     def commit(self):
         """ Publish state change """
-        if self.dirty:
-            self.dirty = False
-            waiters = self.waiters
-            self.waiters = []
-            for function, connection, request in waiters:
-                try:
-                    function(connection, request)
-                except (KeyboardInterrupt, SystemExit):
-                    raise
-                except:
-                    logging.warning("unhandled exception", exc_info=1)
+        waiters = self.waiters
+        self.waiters = []
+        for function, connection, request in waiters:
+            try:
+                function(connection, request)
+            except (KeyboardInterrupt, SystemExit):
+                raise
+            except:
+                logging.warning("unhandled exception", exc_info=1)

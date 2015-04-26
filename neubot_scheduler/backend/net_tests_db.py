@@ -10,7 +10,7 @@
 import json
 import os
 
-class NetworkTestsDB(object):
+class NetTestsDB(object):
     """ Network tests DB class """
 
     def __init__(self, basedir):

@@ -15,7 +15,7 @@ import tempfile
 
 from . import utils
 
-class Runner(object):
+class RunnerOnce(object):
     """ Runner class """
 
     @staticmethod
@@ -87,8 +87,27 @@ class Runner(object):
         self.stdout.close()
         self.stderr.close()
         if self.complete:
-            self.complete(self)
+            self.complete()
 
     def get_pendingdir(self):
         """ Return the base directory """
         return self.pendingdir
+
+class Runner(object):
+    """ Runner object """
+
+    def __init__(self, schedule, basedir):
+        self.schedule = schedule
+        self.basedir = basedir
+        self.child = None
+
+    def run(self, command_line, **kwargs):
+        """ Run child process """
+        if self.child:
+            raise RuntimeError("child already running")
+        self.child = RunnerOnce(self.complete_, self.schedule, self.basedir,
+                                command_line, **kwargs)
+
+    def complete_(self):
+        """ Called when the child is done """
+        self.child = None
