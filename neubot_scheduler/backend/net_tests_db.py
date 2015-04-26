@@ -22,7 +22,7 @@ class NetTestsDB(object):
             return
         path = os.path.join(self.basedir, name)
         if not os.path.isfile(path):
-            return
+            raise RuntimeError("No such test")
         with open(path, "r") as filep:
             return json.load(filep)
 

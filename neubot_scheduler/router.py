@@ -9,6 +9,8 @@
 
 import cgi
 import json
+import logging
+import re
 
 from . import http
 from . import utils
@@ -33,7 +35,7 @@ class Router(object):
             "/api/exit": self.serve_api_exit,
             "/api/index": self.serve_api_index,
             "/api/log": self.serve_api_log,
-            #"/api/runner": self.serve_api_runner,
+            "/api/runner": self.serve_api_runner,
             "/api/state": self.serve_api_state,
             "/api/tests": self.serve_api_tests,
             "/api/version": self.serve_api_tests,
@@ -125,20 +127,28 @@ class Router(object):
             "Content-Type": "application/json",
         }, json.dumps(self.log_db.select(since, until))))
 
-#   def serve_api_runner(self, connection, request):
-#       """ Manages /api/runner URL """
-#       query = ""
-#       index = request.url.find("?")
-#       if index >= 0:
-#           query = request.url[index + 1:]
-#       streaming = 0
-#       test = ""
-#       params = cgi.parse_qs(query)
-#       if "streaming" in params:
-#           streaming = int(params["streaming"][0])
-#       if "test" in params:
-#           test = str(params["test"][0])
-#       self.runner.run(connection, test, streaming)
+    def serve_api_runner(self, connection, request):
+        """ Manages /api/runner URL """
+        request_body = json.loads(request.body_as_string("utf-8"))
+        test = request_body["test"]
+        descr = self.net_tests_db.read_one(test)
+        logging.debug("/api/runner: orig cmdline: %s", descr["command_line"])
+        command_line = []
+        for item in descr["command_line"]:
+            if not item.startswith("$"):
+                command_line.append(item)
+                continue
+            if item not in request_body["params"]:
+                raise RuntimeError("No mapping for param")
+            value = request_body["params"][item]
+            if not re.match(descr["params"][item]["regexp"], value):
+                raise RuntimeError("Invalid parameter")
+            command_line.append(value)
+        logging.debug("/api/runner: expanded cmdline: %s", command_line)
+        self.runner.run(command_line)
+        connection.write(http.writer.compose_response("200", "Ok", {
+            "Content-Type": "application/json",
+        }, "{}"))
 
     def serve_api_state(self, connection, request):
         """ Manages /api/state URL """
