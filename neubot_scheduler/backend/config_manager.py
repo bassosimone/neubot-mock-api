@@ -7,94 +7,57 @@
 
 """ Configuration manager """
 
-import json
-import os
-import uuid
-
-from .. import http
-
-BASEDIR = "./config/"
-
-VALID_VARIABLES = {
-    "enabled": int,
-    "uuid": str,
-}
-
-LABELS = {
-    "enabled": "Whether automatic tests are enabled",
-    "uuid": "Unique identifier of this Neubot",
-}
+import sqlite3
 
 class ConfigManager(object):
-    """ Configuration manager class """
+    """
+     Configuration manager class. The constructor receives the database
+     path as first argument, and a dictionary describing configuration vars
+     as second argument. The latter is something like this:
 
-    def __init__(self):
-        conf = self.read_config()
-        self._initialize(conf)
-        self.write_config(conf)
+         {
+             "enabled": {
+                 "cast": int,
+                 "default_value": 1,
+                 "label": "Whether automatic tests are enabled"
+             }
+         }
+    """
 
-    @staticmethod
-    def _initialize(conf):
-        """ Sanitize configuration """
-        if "uuid" not in conf:
-            conf["uuid"] = str(uuid.uuid4())
-        if "enabled" not in conf:
-            conf["enabled"] = 1
+    def __init__(self, path, variables):
+        self.conn = sqlite3.connect(path)
+        self.variables = variables
+        self.conn.row_factory = sqlite3.Row
+        self.conn.execute("""CREATE TABLE IF NOT EXISTS config(
+                             name TEXT PRIMARY KEY,
+                             value TEXT);""")
+        conf = self.select(False)
+        for name in self.variables:
+            if name not in conf:
+                self.conn.execute("INSERT INTO config VALUES(?, ?);", (name,
+                                  self.variables[name]["default_value"]))
+        self.conn.commit()
 
-    @staticmethod
-    def read_variable(name):
-        """ Read single configuration variable """
-        if name not in VALID_VARIABLES:
-            return
-        path = os.path.join(BASEDIR, name)
-        if not os.path.isfile(path):
-            return
-        with open(path, "r") as filep:
-            value = filep.read().strip()
-            return VALID_VARIABLES[name](value)
-
-    def read_config(self):
-        """ Internal function to get config """
-        conf = {}
-        for name in os.listdir(BASEDIR):
-            value = self.read_variable(name)
-            if value is not None:
-                conf[name] = value
-        return conf
-
-    def get_config(self, connection, wants_labels):
-        """ Get settings """
-        if wants_labels:
-            obj_to_dump = LABELS
+    def select(self, want_labels):
+        """ Select configuration variables or labels """
+        result = {}
+        if not want_labels:
+            cursor = self.conn.cursor()
+            cursor.execute("SELECT name, value FROM config;")
+            for name, value in cursor:
+                if name in self.variables:
+                    value = self.variables[name]["cast"](value)
+                    result[name] = value
         else:
-            obj_to_dump = self.read_config()
-        connection.write(http.writer.compose_response("200", "Ok", {
-            "Content-Type": "application/json",
-        }, json.dumps(obj_to_dump)))
+            for name in self.variables:
+                result[name] = self.variables[name]["label"]
+        return result
 
-    @staticmethod
-    def write_variable(name, value):
-        """ Write single configuration variable """
-        if name not in VALID_VARIABLES:
-            return
-        path = os.path.join(BASEDIR, name)
-        with open(path, "w") as filep:
-            filep.write(str(value) + "\n")
-
-    def write_config(self, dictionary):
+    def update(self, dictionary):
         """ Internal function to set config """
-        for name, value in dictionary.items():
-            self.write_variable(name, value)
-
-    def set_config(self, connection, updated_settings):
-        """ Change settings """
-        self.write_config(updated_settings)
-        connection.write(http.writer.compose_response("200", "Ok", {
-            "Content-Type": "application/json",
-        }, "{}"))
-
-CONFIG_MANAGER = ConfigManager()
-
-def get():
-    """ Get the default configuration manager """
-    return CONFIG_MANAGER
+        for name in dictionary.keys():
+            if name not in self.variables:
+                del dictionary[name]
+        self.conn.executemany("INSERT OR REPLACE INTO config VALUES(?, ?);",
+                              dictionary.items())
+        self.conn.commit()
