@@ -48,8 +48,10 @@ startTest("mtr", {
 startTest("traceroute", {
     "$domain": "8.8.8.8"
 })
-*/
 
 startTest("wget", {
     "$url": "https://didattica.polito.it/tesi/SaperComunicare.pdf"
-})
+}
+*/
+
+startTest("rain", {});
