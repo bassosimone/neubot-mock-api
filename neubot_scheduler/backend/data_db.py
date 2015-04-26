@@ -5,14 +5,14 @@
 # information on the copying conditions.
 #
 
-""" Data manager """
+""" Data DB """
 
 import json
 import sqlite3
 
-class DataManager(object):
+class DataDB(object):
     """
-     Data manager class. The constructor receives the database
+     Data DB class. The constructor receives the database
      path as its first argument.
     """
 

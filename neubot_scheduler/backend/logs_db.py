@@ -5,13 +5,13 @@
 # information on the copying conditions.
 #
 
-""" Log manager """
+""" Logs DB """
 
 import sqlite3
 
-class LogManager(object):
+class LogsDB(object):
     """
-     Log manager class. The constructor receives the database path as
+     Logs DB class. The constructor receives the database path as
      first argument.
     """
 

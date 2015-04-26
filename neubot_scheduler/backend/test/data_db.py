@@ -5,7 +5,7 @@
 # information on the copying conditions.
 #
 
-""" Log manager tests """
+""" Data DB tests """
 
 import json
 import unittest
@@ -15,18 +15,20 @@ import uuid
 if __name__ == "__main__":
     sys.path.insert(0, ".")
 
-from neubot_scheduler.backend.log_manager import LogManager
+from neubot_scheduler.backend.data_db import DataDB
 
 class NormalUsageCase(unittest.TestCase):
     """ Normal usage case """
 
     def test_normal_usage(self):
         """ Tests normal usage """
-        mgr = LogManager(":memory:")
+        mgr = DataDB(":memory:")
         for timestamp in range(128):
-            mgr.insert(timestamp, "x", "DEBUG", "antani")
+            mgr.insert(timestamp, "x", json.dumps({"t": timestamp}, False))
         mgr.commit()
-        sys.stdout.write("%s\n" % mgr.select(7, 27))
+        sys.stdout.write("%s\n" % mgr.select("x", 0, 128, 7, 20))
+        sys.stdout.write("%s\n" % mgr.select("x", 0, 128, 127, 20))
+        sys.stdout.write("%s\n" % mgr.select("x", 0, 128, 128, 20))
 
 if __name__ == "__main__":
     unittest.main()

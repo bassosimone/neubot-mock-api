@@ -5,13 +5,13 @@
 # information on the copying conditions.
 #
 
-""" Configuration manager """
+""" Configuration DB """
 
 import sqlite3
 
-class ConfigManager(object):
+class ConfigDB(object):
     """
-     Configuration manager class. The constructor receives the database
+     Configuration DB class. The constructor receives the database
      path as first argument, and a dictionary describing configuration vars
      as second argument. The latter is something like this:
 
