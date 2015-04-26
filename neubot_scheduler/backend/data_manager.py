@@ -7,19 +7,45 @@
 
 """ Data manager """
 
-from .. import http
+import json
+import sqlite3
 
 class DataManager(object):
-    """ Data manager class """
+    """
+     Data manager class. The constructor receives the database
+     path as its first argument.
+    """
 
-    def query_data(self, connection, test, since, until):
-        """ Query saved data """
-        connection.write(http.writer.compose_response("200", "Ok", {
-            "Content-Type": "application/json",
-        }, "{}"))
+    def __init__(self, path):
+        self.conn = sqlite3.connect(path)
+        self.conn.row_factory = sqlite3.Row
+        self.conn.execute("""CREATE TABLE IF NOT EXISTS data(
+                             timestamp NUMBER PRIMARY KEY,
+                             test_name TEXT,
+                             json_string TEXT);""")
 
-DATA_MANAGER = DataManager()
+    def select(self, test_name, since, until, offset, limit):
+        """ Select saved data """
+        result = []
+        cursor = self.conn.cursor()
+        cursor.execute("""SELECT json_string FROM data
+                          WHERE timestamp >= ? AND
+                                timestamp < ? AND
+                                test_name = ?
+                          LIMIT ? OFFSET ?;""", (
+                       since, until, test_name, limit, offset))
+        for result_tuple in cursor:
+            result.append(json.loads(result_tuple[0]))
+        return result
 
-def get():
-    """ Get the default data manager """
-    return DATA_MANAGER
+    def insert(self, timestamp, test_name, json_string, commit=True):
+        """ Insert new result in database """
+        self.conn.execute("""INSERT INTO data(timestamp, test_name,
+                             json_string) VALUES(?, ?, ?);""",
+                          (timestamp, test_name, json_string))
+        if commit:
+            self.conn.commit()
+
+    def commit(self):
+        """ Commit changes """
+        self.conn.commit()
