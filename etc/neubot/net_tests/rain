@@ -1,0 +1,7 @@
+{
+    "name": "rain",
+    "command_line": [
+        "rain", "-d", "120"
+    ],
+    "params": {}
+}

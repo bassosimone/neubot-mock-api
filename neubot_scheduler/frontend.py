@@ -11,10 +11,17 @@ import asyncore
 import logging
 import sched
 import time
+import uuid
 
-from .backend import state_manager
+from .backend.config_db import ConfigDB
+from .backend.data_db import DataDB
+from .backend.logs_db import LogsDB
+from .backend.net_tests_db import NetTestsDB
 
-from . import router
+from .router import Router
+from .runner import Runner
+from .state_tracker import StateTracker
+
 from . import utils
 from . import http
 
@@ -25,41 +32,43 @@ class Frontend(object):
         self.periodic = periodic
         self.scheduler = sched.scheduler(utils.ticks, self._poll)
         self.sched_periodic_task_()
+        self.state_tracker = StateTracker()
         http.listen({
             "port": 9774,
-            "routes": {
-                "/": router.rootdir,
-                "/api": router.api_,
-                "/api/": router.api_,
-                "/api/config": router.api_config,
-                "/api/data": router.api_data,
-                "/api/debug": router.api_debug,
-                "/api/exit": router.api_exit,
-                "/api/index": router.api_index,
-                "/api/log": router.api_log,
-                "/api/runner": router.api_runner,
-                "/api/specs": router.api_specs,
-                "/api/state": router.api_state,
-                "/api/version": router.api_version,
-            }
+            "routes": Router(
+                ConfigDB("./var/lib/neubot/scheduler/config.sqlite3", {
+                    "enabled": {
+                        "cast": int,
+                        "default_value": 1,
+                        "label": "Whether automatic tests are enabled"
+                    },
+                    "uuid": {
+                        "cast": str,
+                        "default_value": str(uuid.uuid4()),
+                        "label": "Random unique indentifier"
+                    }
+                }),
+                DataDB("./var/lib/neubot/scheduler/data.sqlite3"),
+                LogsDB("./var/lib/neubot/scheduler/log.sqlite3"),
+                NetTestsDB("./etc/neubot/net_tests"),
+                Runner(self.scheduler.enter, "./var/lib/neubot/scheduler"),
+                self.state_tracker,
+            )
         })
 
     def sched_periodic_task_(self):
         """ Schedule periodic task """
-        self.scheduler.enter(self.periodic, 0, self._periodic_task, (self,))
+        self.scheduler.enter(self.periodic, 0, self._periodic_task, ())
 
-    @staticmethod
-    def run_periodic_task_():
+    def run_periodic_task_(self):
         """ Run the periodic task """
-        logging.debug("periodic: trigger comet...")
-        state_manager.get().comet_trigger()
+        self.state_tracker.commit()
 
-    @staticmethod
-    def _periodic_task(obj):
+    def _periodic_task(self):
         """ Periodic maintenance task """
-        obj.sched_periodic_task_()
+        self.sched_periodic_task_()
         try:
-            obj.run_periodic_task_()
+            self.run_periodic_task_()
         except (SystemExit, KeyboardInterrupt):
             raise
         except:
