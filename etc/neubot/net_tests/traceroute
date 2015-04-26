@@ -1,8 +1,7 @@
 {
-    "name": "mtr",
+    "name": "traceroute",
     "command_line": [
-        "mtr",
-        "--report-wide",
+        "traceroute",
         "$domain"
     ],
     "params": {

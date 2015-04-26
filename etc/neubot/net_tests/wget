@@ -1,0 +1,13 @@
+{
+    "name": "wget",
+    "command_line": [
+        "wget",
+        "$url"
+    ],
+    "params": {
+        "$url": {
+            "label": "Domain name to traceroute",
+            "regexp": "^http[s]?://[a-zA-Z0-9_.-]+(:[0-9]+)/.*$"
+        }
+    }
+}
