@@ -7,19 +7,48 @@
 
 """ Log manager """
 
-from .. import http
+import sqlite3
 
 class LogManager(object):
-    """ Log manager class """
+    """
+     Log manager class. The constructor receives the database path as
+     first argument.
+    """
 
-    def query_logs(self, connection, reverse, verbosity):
-        """ Query available tests """
-        connection.write(http.writer.compose_response("200", "Ok", {
-            "Content-Type": "application/json",
-        }, "[]"))
+    def __init__(self, path):
+        self.conn = sqlite3.connect(path)
+        self.conn.row_factory = sqlite3.Row
+        self.conn.execute("""CREATE TABLE IF NOT EXISTS log(
+                             timestamp NUMBER PRIMARY KEY,
+                             tag TEXT,
+                             severity TEXT,
+                             entry TEXT);""")
 
-LOG_MANAGER = LogManager()
+    def select(self, since, until):
+        """ Select saved log entries """
+        result = []
+        cursor = self.conn.cursor()
+        cursor.execute("""SELECT timestamp, tag, severity, entry FROM log
+                          WHERE timestamp >= ? AND
+                                timestamp < ?;""", (
+                       since, until))
+        for timestamp, tag, severity, entry in cursor:
+            result.append({
+                "timestamp": timestamp,
+                "tag": tag,
+                "severity": severity,
+                "entry": entry,
+            })
+        return result
 
-def get():
-    """ Get the default log manager """
-    return LOG_MANAGER
+    def insert(self, timestamp, tag, severity, entry, commit=False):
+        """ Insert new log entry """
+        self.conn.execute("""INSERT INTO log(timestamp, tag, severity,
+                             entry) VALUES(?, ?, ?, ?);""",
+                          (timestamp, tag, severity, entry))
+        if commit:
+            self.conn.commit()
+
+    def commit(self):
+        """ Commit changes """
+        self.conn.commit()
