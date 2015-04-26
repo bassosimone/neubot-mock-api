@@ -40,8 +40,10 @@ class Router(object):
             "/": self.serve_rootdir,
         }
 
+    def __iter__(self):
+        return iter(self.routes)
+
     def __getitem__(self, key):
-        """ Returns available routes """
         return self.routes[key]
 
     @staticmethod
@@ -156,7 +158,7 @@ class Router(object):
         """ Manages /api/tests URL """
         connection.write(http.writer.compose_response("200", "Ok", {
             "Content-Type": "application/json",
-        }, json.dumps(self.net_tests_db.select())))
+        }, json.dumps(self.net_tests_db.read_all())))
 
     @staticmethod
     def serve_api_version(connection, _):
