@@ -16,7 +16,7 @@ from . import utils
 class Runner(object):
     """ Runner class """
 
-    singleton = None
+    singleton = []
 
     def __init__(self, schedule, test_name, command_line, max_runtime,
                  data_db, logs_db):
@@ -33,6 +33,8 @@ class Runner(object):
 
     def run(self):
         """ Run this test """
+        if self.singleton:
+            raise RuntimeError  # this must case a 500
         try:
             self.run_internal_()
         except (KeyboardInterrupt, SystemExit):
@@ -43,16 +45,14 @@ class Runner(object):
 
     def run_internal_(self):
         """ Internal function to run subprocess """
-        if self.singleton:
-            raise RuntimeError
-        self.singleton = self
+        self.singleton.append(self)
         self.begin = utils.timestamp()
         stdin = tempfile.TemporaryFile()
         self.stdout = tempfile.TemporaryFile()
         self.stderr = tempfile.TemporaryFile()
         self.proc = subprocess.Popen(self.command_line, close_fds=True,
             stdin=stdin, stdout=self.stdout, stderr=self.stderr)
-        logging.debug("subprocess begin %d", self.proc.pid)
+        logging.debug("%s: started", self.proc)
         self.sched_periodic_()
 
     def sched_periodic_(self):
@@ -74,31 +74,33 @@ class Runner(object):
         current_time = utils.timestamp()
         exitcode = self.proc.poll()
         if exitcode is not None:
-            logging.debug("subprocess exited %d", self.proc.pid)
+            logging.debug("%s: exited", self.proc)
             self.final_state_("exited")
         elif current_time - self.begin > self.max_runtime:
-            logging.debug("subprocess terminated %d", self.proc.pid)
+            logging.debug("%s: killed by us", self.proc)
             self.proc.terminate()
             # Assume that once killed the process will terminate
             self.final_state_("killed")
         else:
-            logging.debug("subprocess running %d", self.proc.pid)
+            logging.debug("%s: still running", self.proc)
             self.sched_periodic_()
 
     def final_state_(self, state_name):
         """ Final state """
-        self.singleton = None
-        logging.debug("subprocess %d: %s", self.proc.pid, state_name)
+        self.singleton = []
+        logging.debug("%s: final state: %s", self.proc, state_name)
         self.proc = None
-        if self.data_db:
-            self.stdout.seek(0)
-            self.data_db.insert(self.begin, self.test_name,
-                                self.stdout.read().decode("iso-8859-1"))
-            self.data_db.commit()
-        self.stdout.close()
-        if self.logs_db:
-            self.stderr.seek(0)
-            self.logs_db.insert(self.begin, self.test_name, "info",
-                                self.stderr.read().decode("iso-8859-1"))
-            self.logs_db.commit()
-        self.stderr.close()
+        if self.stdout:
+            if self.data_db:
+                self.stdout.seek(0)
+                self.data_db.insert(self.begin, self.test_name,
+                                    self.stdout.read().decode("iso-8859-1"))
+                self.data_db.commit()
+            self.stdout.close()
+        if self.stderr:
+            if self.logs_db:
+                self.stderr.seek(0)
+                self.logs_db.insert(self.begin, self.test_name, "info",
+                                    self.stderr.read().decode("iso-8859-1"))
+                self.logs_db.commit()
+            self.stderr.close()
