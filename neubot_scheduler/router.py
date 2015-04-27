@@ -12,20 +12,22 @@ import json
 import logging
 import re
 
+from .runner import Runner
+
 from . import http
 from . import utils
 
 class Router(object):
     """ Backend class """
 
-    def __init__(self, config_db, data_db, log_db, net_tests_db,
-                 runner, state_tracker):
+    def __init__(self, config_db, data_db, logs_db, net_tests_db,
+                 state_tracker, schedule):
         self.config_db = config_db
         self.data_db = data_db
-        self.log_db = log_db
+        self.logs_db = logs_db
         self.net_tests_db = net_tests_db
-        self.runner = runner
         self.state_tracker = state_tracker
+        self.schedule = schedule
         self.routes = {
             "/api": self.serve_api,
             "/api/": self.serve_api,
@@ -74,11 +76,15 @@ class Router(object):
 
     def serve_api_2_data(self, connection, request):
         """ Manages /api/2/data URL """
-        request_body = json.loads(request.body_as_string("utf-8"))
+        request_body = request.body_as_string("utf-8")
+        if request_body:
+            request_body = json.loads(request_body)
+        else:
+            request_body = {}
         connection.write(http.writer.compose_response("200", "Ok", {
             "Content-Type": "application/json",
         }, json.dumps(self.data_db.select(
-            request_body["test"],
+            request_body.get("test", ""),
             request_body.get("since", 0),
             request_body.get("until", utils.timestamp()),
             request_body.get("offset", 0),
@@ -108,7 +114,7 @@ class Router(object):
             until = int(params["until"][0])
         connection.write(http.writer.compose_response("200", "Ok", {
             "Content-Type": "application/json",
-        }, json.dumps(self.log_db.select(since, until))))
+        }, json.dumps(self.logs_db.select(since, until))))
 
     def serve_api_2_runner(self, connection, request):
         """ Manages /api/2/runner URL """
@@ -128,7 +134,8 @@ class Router(object):
                 raise RuntimeError("Invalid parameter")
             command_line.append(value)
         logging.debug("/api/runner: expanded cmdline: %s", command_line)
-        self.runner.run(test, command_line)
+        Runner(self.schedule, test, command_line, 30.0,
+               self.data_db, self.logs_db).run()
         connection.write(http.writer.compose_response("200", "Ok", {
             "Content-Type": "application/json",
         }, "{}"))

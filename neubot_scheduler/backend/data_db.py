@@ -21,28 +21,40 @@ class DataDB(object):
         self.conn.row_factory = sqlite3.Row
         self.conn.execute("""CREATE TABLE IF NOT EXISTS data(
                              timestamp NUMBER PRIMARY KEY,
-                             test_name TEXT,
-                             json_string TEXT);""")
+                             test TEXT,
+                             report TEXT);""")
 
-    def select(self, test_name, since, until, offset, limit):
+    def select(self, test, since, until, offset, limit):
         """ Select saved data """
         result = []
         cursor = self.conn.cursor()
-        cursor.execute("""SELECT json_string FROM data
-                          WHERE timestamp >= ? AND
-                                timestamp < ? AND
-                                test_name = ?
-                          LIMIT ? OFFSET ?;""", (
-                       since, until, test_name, limit, offset))
-        for result_tuple in cursor:
-            result.append(json.loads(result_tuple[0]))
+        if test:
+            cursor.execute("""SELECT * FROM data
+                              WHERE timestamp >= ? AND
+                                    timestamp < ? AND
+                                    test = ?
+                              LIMIT ? OFFSET ?;""", (
+                           since, until, test, limit, offset))
+        else:
+            cursor.execute("""SELECT * FROM data
+                              WHERE timestamp >= ? AND
+                                    timestamp < ?
+                              LIMIT ? OFFSET ?;""", (
+                           since, until, limit, offset))
+
+        for tpl in cursor:
+            result.append({
+                "timestamp": tpl[0],
+                "test": tpl[1],
+                "report": tpl[2],
+            })
         return result
 
-    def insert(self, timestamp, test_name, json_string, commit=True):
+    def insert(self, timestamp, test, report, commit=True):
         """ Insert new result in database """
-        self.conn.execute("""INSERT INTO data(timestamp, test_name,
-                             json_string) VALUES(?, ?, ?);""",
-                          (timestamp, test_name, json_string))
+        self.conn.execute("""INSERT INTO data(timestamp, test,
+                             report) VALUES(?, ?, ?);""",
+                          (timestamp, test, report))
         if commit:
             self.conn.commit()
 

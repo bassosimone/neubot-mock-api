@@ -40,6 +40,8 @@ var startTest = function(testName, testParams) {
     request.end(JSON.stringify(requestBody));
 };
 
+startTest("rain", {});
+
 /*
 startTest("mtr", {
     "$domain": "8.8.8.8"
@@ -53,9 +55,7 @@ startTest("wget", {
     "$url": "https://didattica.polito.it/tesi/SaperComunicare.pdf"
 });
 
-startTest("rain", {});
-*/
-
 startTest("neubot_speedtest", {
     "$address": "neubot.mlab.mlab1.trn01.measurement-lab.org"
 });
+*/

@@ -32,12 +32,12 @@ class LogsDB(object):
                           WHERE timestamp >= ? AND
                                 timestamp < ?;""", (
                        since, until))
-        for timestamp, tag, severity, entry in cursor:
+        for tpl in cursor:
             result.append({
-                "timestamp": timestamp,
-                "tag": tag,
-                "severity": severity,
-                "entry": entry,
+                "timestamp": tpl[0],
+                "tag": tpl[1],
+                "severity": tpl[2],
+                "entry": tpl[3],
             })
         return result
 

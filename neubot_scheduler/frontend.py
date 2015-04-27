@@ -19,7 +19,6 @@ from .backend.logs_db import LogsDB
 from .backend.net_tests_db import NetTestsDB
 
 from .router import Router
-from .runner import Runner
 from .state_tracker import StateTracker
 
 from . import utils
@@ -51,8 +50,8 @@ class Frontend(object):
                 DataDB("./var/lib/neubot/scheduler/data.sqlite3"),
                 LogsDB("./var/lib/neubot/scheduler/log.sqlite3"),
                 NetTestsDB("./etc/neubot/net_tests"),
-                Runner(self.scheduler.enter, "./var/lib/neubot/scheduler"),
                 self.state_tracker,
+                self.scheduler.enter
             )
         })
 

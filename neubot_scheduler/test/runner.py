@@ -27,13 +27,9 @@ class NormalUsageCase(unittest.TestCase):
         """ Tests normal usage """
         scheduler = sched.scheduler(time.time, time.sleep)
 
-        Runner(None, scheduler.enter, "./var/lib/neubot/scheduler", [
+        Runner(scheduler.enter, "antani", [
             "/usr/bin/mtr", "--report-wide", "8.8.8.8"
-        ])
-
-        Runner(None, scheduler.enter, "./var/lib/neubot/scheduler", [
-            "/usr/bin/python"
-        ], bytes_for_stdin=b"\xe4Antani\xff\xfe")
+        ], 30, None, None).run()
 
         scheduler.run()
 
