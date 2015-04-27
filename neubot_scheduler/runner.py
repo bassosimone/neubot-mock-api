@@ -16,7 +16,7 @@ from . import utils
 class Runner(object):
     """ Runner class """
 
-    singleton = None
+    singleton = []
 
     def __init__(self, schedule, test_name, command_line, max_runtime,
                  data_db, logs_db):
@@ -45,7 +45,7 @@ class Runner(object):
         """ Internal function to run subprocess """
         if self.singleton:
             raise RuntimeError
-        self.singleton = self
+        self.singleton.append(self)
         self.begin = utils.timestamp()
         stdin = tempfile.TemporaryFile()
         self.stdout = tempfile.TemporaryFile()
@@ -87,7 +87,7 @@ class Runner(object):
 
     def final_state_(self, state_name):
         """ Final state """
-        self.singleton = None
+        self.singleton = []
         logging.debug("subprocess %d: %s", self.proc.pid, state_name)
         self.proc = None
         if self.data_db:
