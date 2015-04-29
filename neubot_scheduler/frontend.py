@@ -27,13 +27,13 @@ from . import http
 class Frontend(object):
     """ Neubot frontend """
 
-    def __init__(self, periodic=30.0):
+    def __init__(self, port=9774, periodic=30.0):
         self.periodic = periodic
         self.scheduler = sched.scheduler(utils.ticks, self._poll)
         self.sched_periodic_task_()
         self.state_tracker = StateTracker()
         http.listen({
-            "port": 9774,
+            "port": port,
             "routes": Router(
                 ConfigDB("./var/lib/neubot/scheduler/config.sqlite3", {
                     "enabled": {
@@ -54,6 +54,8 @@ class Frontend(object):
                 self.scheduler.enter
             )
         })
+        with open("./var/run/neubot/scheduler/port", "w") as filep:
+            filep.write("%d\n" % port)
 
     def sched_periodic_task_(self):
         """ Schedule periodic task """
