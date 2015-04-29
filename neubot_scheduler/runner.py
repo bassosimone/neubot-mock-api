@@ -87,7 +87,7 @@ class Runner(object):
 
     def final_state_(self, state_name):
         """ Final state """
-        self.singleton = []
+        del self.singleton[:]
         logging.debug("%s: final state: %s", self.proc, state_name)
         self.proc = None
         if self.stdout:
