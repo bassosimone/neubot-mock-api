@@ -27,19 +27,24 @@ from . import http
 class Frontend(object):
     """ Neubot frontend """
 
-    def __init__(self, periodic=30.0):
+    def __init__(self, port=9774, periodic=30.0):
         self.periodic = periodic
         self.scheduler = sched.scheduler(utils.ticks, self._poll)
         self.sched_periodic_task_()
         self.state_tracker = StateTracker()
         http.listen({
-            "port": 9774,
+            "port": port,
             "routes": Router(
                 ConfigDB("./var/lib/neubot/scheduler/config.sqlite3", {
                     "enabled": {
                         "cast": int,
                         "default_value": 1,
                         "label": "Whether automatic tests are enabled"
+                    },
+                    "keep_temporary_files": {
+                        "cast": int,
+                        "default_value": 0,
+                        "label": "Keep temporary test files for debugging"
                     },
                     "uuid": {
                         "cast": str,
@@ -51,9 +56,12 @@ class Frontend(object):
                 LogsDB("./var/lib/neubot/scheduler/log.sqlite3"),
                 NetTestsDB("./etc/neubot/net_tests"),
                 self.state_tracker,
-                self.scheduler.enter
+                self.scheduler.enter,
+                "./var/lib/neubot/scheduler/pending"
             )
         })
+        with open("./var/run/neubot/scheduler/port", "w") as filep:
+            filep.write("%d\n" % port)
 
     def sched_periodic_task_(self):
         """ Schedule periodic task """

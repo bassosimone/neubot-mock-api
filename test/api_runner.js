@@ -40,12 +40,12 @@ var startTest = function(testName, testParams) {
     request.end(JSON.stringify(requestBody));
 };
 
-startTest("rain", {});
-
-/*
 startTest("mtr", {
     "$domain": "8.8.8.8"
 });
+
+/*
+startTest("rain", {});
 
 startTest("traceroute", {
     "$domain": "8.8.8.8"
