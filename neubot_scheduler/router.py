@@ -21,13 +21,14 @@ class Router(object):
     """ Backend class """
 
     def __init__(self, config_db, data_db, logs_db, net_tests_db,
-                 state_tracker, schedule):
+                 state_tracker, schedule, pending_dir):
         self.config_db = config_db
         self.data_db = data_db
         self.logs_db = logs_db
         self.net_tests_db = net_tests_db
         self.state_tracker = state_tracker
         self.schedule = schedule
+        self.pending_dir = pending_dir
         self.routes = {
             "/api": self.serve_api,
             "/api/": self.serve_api,
@@ -135,7 +136,8 @@ class Router(object):
             command_line.append(value)
         logging.debug("/api/runner: expanded cmdline: %s", command_line)
         Runner(self.schedule, test, command_line, 30.0,
-               self.data_db, self.logs_db).run()
+               self.data_db, self.logs_db, self.config_db,
+               self.pending_dir).run()
         connection.write(http.writer.compose_response("200", "Ok", {
             "Content-Type": "application/json",
         }, "{}"))

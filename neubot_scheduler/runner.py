@@ -7,6 +7,7 @@
 
 """ Runner """
 
+import datetime
 import logging
 import subprocess
 import tempfile
@@ -19,13 +20,15 @@ class Runner(object):
     singleton = []
 
     def __init__(self, schedule, test_name, command_line, max_runtime,
-                 data_db, logs_db):
+                 data_db, logs_db, config_db, pending_dir):
         self.schedule = schedule
         self.test_name = test_name
         self.command_line = command_line
         self.max_runtime = max_runtime
         self.data_db = data_db
         self.logs_db = logs_db
+        self.config_db = config_db
+        self.pending_dir = pending_dir
         self.begin = 0
         self.stdout = None
         self.stderr = None
@@ -47,9 +50,15 @@ class Runner(object):
         """ Internal function to run subprocess """
         self.singleton.append(self)
         self.begin = utils.timestamp()
-        stdin = tempfile.TemporaryFile()
-        self.stdout = tempfile.TemporaryFile()
-        self.stderr = tempfile.TemporaryFile()
+        prefix = datetime.datetime.now().strftime("%Y%m%d%H%M%S%f") \
+                 + "-" + self.test_name + "-"
+        delete = not self.config_db.select()["keep_temporary_files"]
+        stdin = tempfile.NamedTemporaryFile(prefix=prefix + "stdin-",
+                           suffix=".txt", dir=self.pending_dir, delete=delete)
+        self.stdout = tempfile.NamedTemporaryFile(prefix=prefix + "stdout-",
+                           suffix=".txt", dir=self.pending_dir, delete=delete)
+        self.stderr = tempfile.NamedTemporaryFile(prefix=prefix + "stderr-",
+                           suffix=".txt", dir=self.pending_dir, delete=delete)
         self.proc = subprocess.Popen(self.command_line, close_fds=True,
             stdin=stdin, stdout=self.stdout, stderr=self.stderr)
         logging.debug("%s: started", self.proc)

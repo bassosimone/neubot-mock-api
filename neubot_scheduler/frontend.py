@@ -41,6 +41,11 @@ class Frontend(object):
                         "default_value": 1,
                         "label": "Whether automatic tests are enabled"
                     },
+                    "keep_temporary_files": {
+                        "cast": int,
+                        "default_value": 0,
+                        "label": "Keep temporary test files for debugging"
+                    },
                     "uuid": {
                         "cast": str,
                         "default_value": str(uuid.uuid4()),
@@ -51,7 +56,8 @@ class Frontend(object):
                 LogsDB("./var/lib/neubot/scheduler/log.sqlite3"),
                 NetTestsDB("./etc/neubot/net_tests"),
                 self.state_tracker,
-                self.scheduler.enter
+                self.scheduler.enter,
+                "./var/lib/neubot/scheduler/pending"
             )
         })
         with open("./var/run/neubot/scheduler/port", "w") as filep:
