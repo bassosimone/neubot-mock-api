@@ -24,8 +24,8 @@ var getData = function(testName) {
     };
 
     var request = http.request(options, function (response) {
-        console.log('STATUS: ' + response.statusCode);
-        console.log('HEADERS: ' + JSON.stringify(response.headers));
+        //console.log('STATUS: ' + response.statusCode);
+        //console.log('HEADERS: ' + JSON.stringify(response.headers));
         response.setEncoding('utf8');
         response.on('data', function (chunk) {
             console.log('BODY: ' + chunk);
@@ -39,4 +39,4 @@ var getData = function(testName) {
     request.end(JSON.stringify(requestBody));
 };
 
-getData("neubot_speedtest");
+getData("mtr");

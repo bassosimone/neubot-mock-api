@@ -36,5 +36,5 @@ var changeConfig = function(requestBody) {
 };
 
 changeConfig({
-    enabled: 0
+    keep_temporary_files: 1
 });
