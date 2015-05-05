@@ -40,11 +40,15 @@ var startTest = function(testName, testParams) {
     request.end(JSON.stringify(requestBody));
 };
 
+startTest("neubot_speedtest", {
+    "$address": "neubot.mlab.mlab1.trn01.measurement-lab.org"
+});
+
+/*
 startTest("mtr", {
     "$domain": "8.8.8.8"
 });
 
-/*
 startTest("rain", {});
 
 startTest("traceroute", {
@@ -53,9 +57,5 @@ startTest("traceroute", {
 
 startTest("wget", {
     "$url": "https://didattica.polito.it/tesi/SaperComunicare.pdf"
-});
-
-startTest("neubot_speedtest", {
-    "$address": "neubot.mlab.mlab1.trn01.measurement-lab.org"
 });
 */

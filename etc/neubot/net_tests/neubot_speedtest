@@ -1,8 +1,8 @@
 {
     "command_line": [
-        "$python", "-m", "./usr/share/neubot-speedtest/neubot_speedtest",
-        "-f", "-A", "$address"
+        "$python", "-m", "neubot_speedtest", "-vf", "-A", "$address"
     ],
+    "directory": "./usr/share/neubot-speedtest",
     "params": {
         "$address": {
             "label": "Name of mlab sliver to use",

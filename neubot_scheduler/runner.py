@@ -20,7 +20,7 @@ class Runner(object):
     singleton = []
 
     def __init__(self, schedule, test_name, command_line, max_runtime,
-                 data_db, logs_db, config_db, pending_dir):
+                 data_db, logs_db, config_db, pending_dir, run_dir):
         self.schedule = schedule
         self.test_name = test_name
         self.command_line = command_line
@@ -29,6 +29,7 @@ class Runner(object):
         self.logs_db = logs_db
         self.config_db = config_db
         self.pending_dir = pending_dir
+        self.run_dir = run_dir
         self.begin = 0
         self.stdout = None
         self.stderr = None
@@ -59,8 +60,11 @@ class Runner(object):
                            suffix=".txt", dir=self.pending_dir, delete=delete)
         self.stderr = tempfile.NamedTemporaryFile(prefix=prefix + "stderr-",
                            suffix=".txt", dir=self.pending_dir, delete=delete)
+        logging.debug("running %s in directory %s", self.command_line,
+                      self.run_dir)
         self.proc = subprocess.Popen(self.command_line, close_fds=True,
-            stdin=stdin, stdout=self.stdout, stderr=self.stderr)
+            stdin=stdin, stdout=self.stdout, stderr=self.stderr,
+            cwd=self.run_dir)
         logging.debug("%s: started", self.proc)
         self.sched_periodic_()
 

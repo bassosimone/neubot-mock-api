@@ -140,7 +140,7 @@ class Router(object):
         logging.debug("/api/runner: expanded cmdline: %s", command_line)
         Runner(self.schedule, test, command_line, 30.0,
                self.data_db, self.logs_db, self.config_db,
-               self.pending_dir).run()
+               self.pending_dir, descr.get("directory")).run()
         connection.write(http.writer.compose_response("200", "Ok", {
             "Content-Type": "application/json",
         }, "{}"))
