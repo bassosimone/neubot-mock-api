@@ -1,8 +1,7 @@
 {
-    "name": "rain",
     "command_line": [
-        "python", "/home/sbasso/src/neubot/neubot/neubot/main/__init__.py",
-        "speedtest", "-f", "-A", "$address"
+        "$python", "-m", "./usr/share/neubot-speedtest/neubot_speedtest",
+        "-f", "-A", "$address"
     ],
     "params": {
         "$address": {

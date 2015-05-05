@@ -127,6 +127,9 @@ class Router(object):
             if not item.startswith("$"):
                 command_line.append(item)
                 continue
+            if item == "$python":
+                command_line.append(sys.executable)
+                continue
             if item not in request_body["params"]:
                 raise RuntimeError("No mapping for param")
             value = request_body["params"][item]
