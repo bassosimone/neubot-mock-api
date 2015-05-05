@@ -16,12 +16,12 @@ from . import writer
 class FileHandler(object):
     """ File handler class """
 
-    def __init__(self, default_file, rootdir):
-        self.default_file = default_file
+    def __init__(self, rootdir, default_file):
         logging.debug("fh: user specified rootdir: %s", rootdir)
         rootdir = os.path.abspath(os.path.realpath(os.path.abspath(rootdir)))
         logging.debug("fh: absolute rootdir is: %s", rootdir)
         self.rootdir = rootdir
+        self.default_file = default_file
 
     def resolve_path(self, path):
         """ Safely maps HTTP path to filesystem path """
