@@ -1,0 +1,3 @@
+[submodule "usr/share/neubot-www"]
+	path = usr/share/neubot-www
+	url = https://github.com/neubot/neubot-www

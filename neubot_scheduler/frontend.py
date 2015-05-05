@@ -58,6 +58,10 @@ class Frontend(object):
                 self.state_tracker,
                 self.scheduler.enter,
                 "./var/lib/neubot/scheduler/pending"
+            ),
+            "file_handler": http.FileHandler(
+                "./usr/share/neubot-www/www",
+                "index.html",
             )
         })
         with open("./var/run/neubot/scheduler/port", "w") as filep:

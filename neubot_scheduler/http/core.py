@@ -65,9 +65,10 @@ class HTTPRequestHandler(asyncore.dispatcher):
 class HTTPServer(asyncore.dispatcher):
     """ HTTP server """
 
-    def __init__(self):
+    def __init__(self, file_handler=None):
         asyncore.dispatcher.__init__(self)
         self.routes = {}
+        self.file_handler = file_handler
 
     def add_route(self, url, generator):
         """ Add a route """
@@ -102,6 +103,8 @@ class HTTPServer(asyncore.dispatcher):
 
         if url in self.routes:
             self.routes[url](connection, request)
+        elif self.file_handler:
+            self.file_handler(connection, request)
         else:
             connection.write(writer.compose_error("404", "Not Found"))
 
@@ -120,10 +123,11 @@ def listen(settings):
     settings.setdefault("hostname", "")
     settings.setdefault("port", 8080)
     settings.setdefault("routes", {})
+    settings.setdefault("file_handler", None)
 
     epnt = settings["hostname"], int(settings["port"])
 
-    server = HTTPServer()
+    server = HTTPServer(settings["file_handler"])
     for key in settings["routes"]:
         server.add_route(key, settings["routes"][key])
     server.create_socket(settings["family"], socket.SOCK_STREAM)
