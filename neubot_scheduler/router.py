@@ -11,6 +11,7 @@ import cgi
 import json
 import logging
 import re
+import sys
 
 from .runner import Runner
 
@@ -58,7 +59,7 @@ class Router(object):
             "Content-Type": "application/json",
         }, json.dumps(list(connection.server.routes.keys()))))
 
-    def serve_api_2_config_labels(self, connection, request):
+    def serve_api_2_config_labels(self, connection, _):
         """ Manages /api/2/config/labels URL """
         connection.write(http.writer.compose_response("200", "Ok", {
             "Content-Type": "application/json",
@@ -127,6 +128,9 @@ class Router(object):
             if not item.startswith("$"):
                 command_line.append(item)
                 continue
+            if item == "$python":
+                command_line.append(sys.executable)
+                continue
             if item not in request_body["params"]:
                 raise RuntimeError("No mapping for param")
             value = request_body["params"][item]
@@ -136,7 +140,7 @@ class Router(object):
         logging.debug("/api/runner: expanded cmdline: %s", command_line)
         Runner(self.schedule, test, command_line, 30.0,
                self.data_db, self.logs_db, self.config_db,
-               self.pending_dir).run()
+               self.pending_dir, descr.get("directory")).run()
         connection.write(http.writer.compose_response("200", "Ok", {
             "Content-Type": "application/json",
         }, "{}"))

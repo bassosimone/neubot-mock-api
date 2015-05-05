@@ -1,3 +1,9 @@
 [submodule "usr/share/neubot-www"]
 	path = usr/share/neubot-www
 	url = https://github.com/neubot/neubot-www
+[submodule "neubot_scheduler/http"]
+	path = neubot_scheduler/http
+	url = https://github.com/bassosimone/neubot-package-http
+[submodule "usr/share/neubot-speedtest"]
+	path = usr/share/neubot-speedtest
+	url = https://github.com/bassosimone/neubot-speedtest

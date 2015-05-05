@@ -1,5 +1,4 @@
 {
-    "name": "traceroute",
     "command_line": [
         "traceroute",
         "$domain"

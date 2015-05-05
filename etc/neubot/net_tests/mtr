@@ -1,5 +1,4 @@
 {
-    "name": "mtr",
     "command_line": [
         "mtr",
         "--report-wide",

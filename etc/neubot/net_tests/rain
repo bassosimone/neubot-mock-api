@@ -1,5 +1,4 @@
 {
-    "name": "rain",
     "command_line": [
         "rain", "-d", "999"
     ],
