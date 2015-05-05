@@ -43,7 +43,6 @@ class Router(object):
             "/api/state": self.serve_api_state,
             "/api/tests": self.serve_api_tests,
             "/api/version": self.serve_api_tests,
-            "/": self.serve_rootdir,
         }
 
     def __iter__(self):
@@ -168,11 +167,3 @@ class Router(object):
         connection.write(http.writer.compose_response("200", "Ok", {
             "Content-Type": "text/plain",
         }, "0.5.0.0"))
-
-    def serve_rootdir(self, connection, _):
-        """ Manages the / URL """
-        body = []
-        body.append("<html></html>")
-        connection.write(http.writer.compose_response("200", "Ok", {
-            "Content-Type": "text/html",
-        }, "".join(body)))
