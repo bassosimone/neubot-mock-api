@@ -11,6 +11,7 @@ import cgi
 import json
 import logging
 import re
+import sys
 
 from .runner import Runner
 
@@ -58,7 +59,7 @@ class Router(object):
             "Content-Type": "application/json",
         }, json.dumps(list(connection.server.routes.keys()))))
 
-    def serve_api_2_config_labels(self, connection, request):
+    def serve_api_2_config_labels(self, connection, _):
         """ Manages /api/2/config/labels URL """
         connection.write(http.writer.compose_response("200", "Ok", {
             "Content-Type": "application/json",
