@@ -37,5 +37,6 @@
          asyncore.loop()
 """
 
+from .file_handler import FileHandler
 from .core import listen
 from . import writer
