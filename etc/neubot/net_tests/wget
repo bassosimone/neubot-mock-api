@@ -1,5 +1,4 @@
 {
-    "name": "wget",
     "command_line": [
         "wget", "-O/dev/null", "-d", "$url"
     ],
