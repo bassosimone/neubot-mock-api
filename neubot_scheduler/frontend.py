@@ -11,12 +11,6 @@ import asyncore
 import logging
 import sched
 import time
-import uuid
-
-from .backend.config_db import ConfigDB
-from .backend.data_db import DataDB
-from .backend.logs_db import LogsDB
-from .backend.net_tests_db import NetTestsDB
 
 from .router import Router
 from .state_tracker import StateTracker
@@ -27,7 +21,7 @@ from . import http
 class Frontend(object):
     """ Neubot frontend """
 
-    def __init__(self, port=9774, periodic=30.0):
+    def __init__(self, path, port=9774, periodic=30.0):
         self.periodic = periodic
         self.scheduler = sched.scheduler(utils.ticks, self._poll)
         self.sched_periodic_task_()
@@ -35,37 +29,14 @@ class Frontend(object):
         http.listen({
             "port": port,
             "routes": Router(
-                ConfigDB("./var/lib/neubot/scheduler/config.sqlite3", {
-                    "enabled": {
-                        "cast": int,
-                        "default_value": 1,
-                        "label": "Whether automatic tests are enabled"
-                    },
-                    "keep_temporary_files": {
-                        "cast": int,
-                        "default_value": 0,
-                        "label": "Keep temporary test files for debugging"
-                    },
-                    "uuid": {
-                        "cast": str,
-                        "default_value": str(uuid.uuid4()),
-                        "label": "Random unique indentifier"
-                    }
-                }),
-                DataDB("./var/lib/neubot/scheduler/data.sqlite3"),
-                LogsDB("./var/lib/neubot/scheduler/log.sqlite3"),
-                NetTestsDB("./etc/neubot/net_tests"),
                 self.state_tracker,
                 self.scheduler.enter,
-                "./var/lib/neubot/scheduler/pending"
             ),
             "file_handler": http.FileHandler(
-                "./usr/share/neubot-www/www",
+                path,
                 "index.html",
             )
         })
-        with open("./var/run/neubot/scheduler/port", "w") as filep:
-            filep.write("%d\n" % port)
 
     def sched_periodic_task_(self):
         """ Schedule periodic task """
