@@ -20,9 +20,9 @@ class Router(object):
         self.routes = {
             "/api": self.serve_api,
             "/api/": self.serve_api,
-            "/api/2/config/labels": self.serve_api_config,
-            "/api/2/data": self.serve_api_data,
-            "/api/2/runner": self.not_implemented,
+            "/api/config": self.serve_api_config,
+            "/api/data": self.serve_api_data,
+            "/api/runner": self.not_implemented,
             "/api/debug": self.not_implemented,
             "/api/exit": self.serve_api_exit,
             "/api/index": self.not_implemented,
